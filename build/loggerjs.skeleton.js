@@ -377,6 +377,7 @@ var ConsoleWrapper = (function (methods, undefined) {
 
 
 var log_namespace = null,
+    uniqueLogKeys = true,
     log_tags = [];
 
 /**
