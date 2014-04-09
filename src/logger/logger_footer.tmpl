@@ -1,0 +1,15 @@
+
+  var module = {
+    Logger: Logger,
+    LogTask: LogTask
+  };
+
+
+  // Add Log Level constants
+  for (property in LOG_LEVELS) {
+    if (typeof LOG_LEVELS[property] === 'string')
+      module[property] = LOG_LEVELS[property];
+  }
+
+  return module;
+})(this);
