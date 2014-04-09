@@ -1,5 +1,6 @@
 
 var log_namespace = null,
+    uniqueLogKeys = true,
     log_tags = [];
 
 /**
