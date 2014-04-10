@@ -4,7 +4,9 @@ var extractLineFromStack = function extractLineFromStack (stack, isFromConsoleWr
   /// </summary>
   /// <param name="stack" type="String">the stack string</param>
 
-  var line_array = stack.split('\n'),
+  // some stacks use pretty print for the first line
+  // so we have to use a regex to split at the right place
+  var line_array = stack.split(/\n\s+at\s+/),
       line;
 
   if (isFromConsoleWrapper) {
