@@ -122,8 +122,9 @@ var parseErrorToJson = function parseErrorToJson (error, with_stack) {
     }
 
     if (error instanceof Error) {
-      // Convert Error to Object
-      log.logMessage = error.stack;
+      // set Stack as message
+      // suppress any leading "ERROR: " String
+      log.logMessage = error.stack.replace(/^ERROR: /,'');
     }
     else {
       log.logMessage = error.message;
@@ -319,19 +320,19 @@ var ConsoleWrapper = (function (methods, undefined) {
     }
 
 
-    if (this.name === 'Error') {
-      this.name = method.toUpperCase();
-    }
-
-    var withStack = (LOG_LEVELS.withStack.indexOf(this.name) > -1) ? true : false;
-
-    var entry = new LogEntry(this, withStack),
+    var uppercase_method = method.toUpperCase(),
+        withStack = (LOG_LEVELS.withStack.indexOf(uppercase_method) > -1) ? true : false,
         task_name = null,
         task_log_level = null;
 
+    // change error.name to the method name
+    this.name = uppercase_method;
+
+    var  entry = new LogEntry(this, withStack);
+
     // execute all logging tasks
     for (task_name in log_tasks) {
-      if (LOG_LEVELS.checkPriority(method.toUpperCase(), log_tasks[task_name].log_level))
+      if (LOG_LEVELS.checkPriority(uppercase_method, log_tasks[task_name].log_level))
         log_tasks[task_name].task(entry);
     }
 
@@ -344,7 +345,7 @@ var ConsoleWrapper = (function (methods, undefined) {
         stack.unshift(args[0]);
 
         // store back as log message
-        args[0] = stack.join('\n   at ');
+        args[0] = stack.join('\n    at ');
       }
     }
 

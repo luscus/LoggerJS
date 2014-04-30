@@ -23,7 +23,7 @@
       error.lineNumber = line;
     }
 
-    error.name = 'UnexpectedError';
+    error.name = 'ERROR';
 
     entry = new LogEntry(error, true);
 

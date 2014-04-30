@@ -63,8 +63,9 @@ var parseErrorToJson = function parseErrorToJson (error, with_stack) {
     }
 
     if (error instanceof Error) {
-      // Convert Error to Object
-      log.logMessage = error.stack;
+      // set Stack as message
+      // suppress any leading "ERROR: " String
+      log.logMessage = error.stack.replace(/^ERROR: /,'');
     }
     else {
       log.logMessage = error.message;
