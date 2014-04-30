@@ -21,14 +21,8 @@ LogEntry.prototype.toString = function () {
   var entry = '';
 
 
-  entry += log.timestamp.toISOString();
-  entry += ' - ';
-  entry += log_namespace;
-  entry += ' - ';
-  entry += log.logLevel;
-  entry += ' - ';
-  entry += log.logLocation;
-  entry += ' - ';
+  entry += this.getConsolePrefix();
+  entry += ' ';
   entry += log.logMessage;
 
   return entry;
