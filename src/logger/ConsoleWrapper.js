@@ -29,7 +29,9 @@ var ConsoleWrapper = (function (methods, undefined) {
       this.name = method.toUpperCase();
     }
 
-    var entry = new LogEntry(this, false),
+    var withStack = (LOG_LEVELS.withStack.indexOf(this.name) > -1) ? true : false;
+
+    var entry = new LogEntry(this, withStack),
         task_name = null,
         task_log_level = null;
 
@@ -39,10 +41,23 @@ var ConsoleWrapper = (function (methods, undefined) {
         log_tasks[task_name].task(entry);
     }
 
+    if (withStack) {
+      if (! (args[0] instanceof Error)) {
+        // stack has to be cleaned from LoggerJS internal calls
+        var stack = stackToArray(this.stack).slice(3);
+
+        // add message at stack start
+        stack.unshift(args[0]);
+
+        // store back as log message
+        args[0] = stack.join('\n   at ');
+      }
+    }
+
     // Convert Error arguments to Object
     for (var idx in args) {
       if (args[idx] instanceof Error) {
-        args[idx] = parseNestedError(args[idx]);
+        args[idx] = args[idx].stack;
       }
     }
 
@@ -52,8 +67,11 @@ var ConsoleWrapper = (function (methods, undefined) {
     args = [prefix].concat(args);
     // via @paulirish console wrapper
     if (console) {
-      if (console[method]) {
-        if (console[method].apply) { console[method].apply(console, args); } else { console[method](args); } // nicer display in some browsers
+      // get a RED display for all methods displaying a stack
+      var console_method = (withStack) ? 'error' : method;
+
+      if (console[console_method]) {
+        if (console[console_method].apply) { console[console_method].apply(console, args); } else { console[console_method](args); } // nicer display in some browsers
       }
       else {
         if (console.log.apply) { console.log.apply(console, args); } else { console.log(args); } // nicer display in some browsers

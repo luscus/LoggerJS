@@ -9,9 +9,6 @@ function LogEntry (error, with_stack) {
     return new LogEntry();
   }
 
-  var regex = null,
-      parts = [];
-
   log = parseErrorToJson(error, with_stack);
   addEnvLogInformation(log);
 }

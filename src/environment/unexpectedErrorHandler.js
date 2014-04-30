@@ -25,7 +25,7 @@
 
     error.name = 'UnexpectedError';
 
-    entry = new LogEntry(error);
+    entry = new LogEntry(error, true);
 
     if (logServerEnabled) {
       pushToLogServer(entry);

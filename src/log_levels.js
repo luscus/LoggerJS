@@ -12,14 +12,20 @@ LOG_LEVELS.DEBUG   = 'DEBUG';
 // log priority
 LOG_LEVELS.priority = {};
 LOG_LEVELS.log_priority = [
-  LOG_LEVELS.AUTH,
-  LOG_LEVELS.INFO,
   LOG_LEVELS.FATAL,
   LOG_LEVELS.ERROR,
   LOG_LEVELS.WARNING,
+  LOG_LEVELS.INFO,
+  LOG_LEVELS.AUTH,
   LOG_LEVELS.LOG,
   LOG_LEVELS.PATH,
   LOG_LEVELS.DEBUG
+];
+
+// Log level that are always diplayed with the error stack
+LOG_LEVELS.withStack = [
+  LOG_LEVELS.FATAL,
+  LOG_LEVELS.ERROR
 ];
 
 

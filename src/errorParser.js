@@ -6,23 +6,35 @@ var extractLineFromStack = function extractLineFromStack (stack, isFromConsoleWr
 
   // some stacks use pretty print for the first line
   // so we have to use a regex to split at the right place
-  var line_array = stack.split(/\n\s+at\s+/),
+  var line_array = stackToArray(stack),
       line;
 
   if (isFromConsoleWrapper) {
-    // correct line number according to how Log().write implemented
+    // correct line number according to how Log().write is implemented
     line = line_array[3];
   }
   else {
+    // all other cases, take first line of the stack
     line = line_array[1];
   }
 
   // fix for various display text
-  line = (line.indexOf(' (') >= 0 ? line.split(' (')[1].substring(0, line.length - 1) : line.split('at ')[1]);
+  //        line may have enclosing parenthesis
+  //   or   line may start with "at"
+  //   else return raw line
+  line = (line.indexOf(' (') >= 0 ? line.split(' (')[1].substring(0, line.length - 1) : line.split('at ')[1]) || line;
+
+  // get rid of the trailing parenthese if any
   line = (line.indexOf(')') >= 0 ? line.split(')')[0] : line);
 
   return line;
 };
+
+
+function stackToArray (stack) {
+  return stack.split(/\n\s+at\s+/);
+}
+
 
 var path_delimiter = null;
 var parseErrorToJson = function parseErrorToJson (error, with_stack) {
@@ -50,9 +62,9 @@ var parseErrorToJson = function parseErrorToJson (error, with_stack) {
       log.hash = CryptoJS.SHA1(log.logMessage).toString();
     }
 
-    if (error.message instanceof Error) {
+    if (error instanceof Error) {
       // Convert Error to Object
-      log.logMessage = parseNestedError(error.message);
+      log.logMessage = error.stack;
     }
     else {
       log.logMessage = error.message;
@@ -88,16 +100,6 @@ var parseErrorToJson = function parseErrorToJson (error, with_stack) {
   }
 
   return log;
-};
-
-var parseNestedError = function parseNestedError (error) {
-  var json = {};
-
-  json.name = error.name;
-  json.message = error.message;
-  json.stack = error.stack;
-
-  return json;
 };
 
 

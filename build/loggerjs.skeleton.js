@@ -28,14 +28,20 @@ LOG_LEVELS.DEBUG   = 'DEBUG';
 // log priority
 LOG_LEVELS.priority = {};
 LOG_LEVELS.log_priority = [
-  LOG_LEVELS.AUTH,
-  LOG_LEVELS.INFO,
   LOG_LEVELS.FATAL,
   LOG_LEVELS.ERROR,
   LOG_LEVELS.WARNING,
+  LOG_LEVELS.INFO,
+  LOG_LEVELS.AUTH,
   LOG_LEVELS.LOG,
   LOG_LEVELS.PATH,
   LOG_LEVELS.DEBUG
+];
+
+// Log level that are always diplayed with the error stack
+LOG_LEVELS.withStack = [
+  LOG_LEVELS.FATAL,
+  LOG_LEVELS.ERROR
 ];
 
 
@@ -59,23 +65,35 @@ var extractLineFromStack = function extractLineFromStack (stack, isFromConsoleWr
 
   // some stacks use pretty print for the first line
   // so we have to use a regex to split at the right place
-  var line_array = stack.split(/\n\s+at\s+/),
+  var line_array = stackToArray(stack),
       line;
 
   if (isFromConsoleWrapper) {
-    // correct line number according to how Log().write implemented
+    // correct line number according to how Log().write is implemented
     line = line_array[3];
   }
   else {
+    // all other cases, take first line of the stack
     line = line_array[1];
   }
 
   // fix for various display text
-  line = (line.indexOf(' (') >= 0 ? line.split(' (')[1].substring(0, line.length - 1) : line.split('at ')[1]);
+  //        line may have enclosing parenthesis
+  //   or   line may start with "at"
+  //   else return raw line
+  line = (line.indexOf(' (') >= 0 ? line.split(' (')[1].substring(0, line.length - 1) : line.split('at ')[1]) || line;
+
+  // get rid of the trailing parenthese if any
   line = (line.indexOf(')') >= 0 ? line.split(')')[0] : line);
 
   return line;
 };
+
+
+function stackToArray (stack) {
+  return stack.split(/\n\s+at\s+/);
+}
+
 
 var path_delimiter = null;
 var parseErrorToJson = function parseErrorToJson (error, with_stack) {
@@ -103,9 +121,9 @@ var parseErrorToJson = function parseErrorToJson (error, with_stack) {
       log.hash = CryptoJS.SHA1(log.logMessage).toString();
     }
 
-    if (error.message instanceof Error) {
+    if (error instanceof Error) {
       // Convert Error to Object
-      log.logMessage = parseNestedError(error.message);
+      log.logMessage = error.stack;
     }
     else {
       log.logMessage = error.message;
@@ -143,16 +161,6 @@ var parseErrorToJson = function parseErrorToJson (error, with_stack) {
   return log;
 };
 
-var parseNestedError = function parseNestedError (error) {
-  var json = {};
-
-  json.name = error.name;
-  json.message = error.message;
-  json.stack = error.stack;
-
-  return json;
-};
-
 
 var getLineEnd = function getFileNameFromLine (line) {
   if (!path_delimiter) {
@@ -180,9 +188,6 @@ function LogEntry (error, with_stack) {
   if (!(this instanceof LogEntry)) {
     return new LogEntry();
   }
-
-  var regex = null,
-      parts = [];
 
   log = parseErrorToJson(error, with_stack);
   addEnvLogInformation(log);
@@ -318,7 +323,9 @@ var ConsoleWrapper = (function (methods, undefined) {
       this.name = method.toUpperCase();
     }
 
-    var entry = new LogEntry(this, false),
+    var withStack = (LOG_LEVELS.withStack.indexOf(this.name) > -1) ? true : false;
+
+    var entry = new LogEntry(this, withStack),
         task_name = null,
         task_log_level = null;
 
@@ -328,10 +335,23 @@ var ConsoleWrapper = (function (methods, undefined) {
         log_tasks[task_name].task(entry);
     }
 
+    if (withStack) {
+      if (! (args[0] instanceof Error)) {
+        // stack has to be cleaned from LoggerJS internal calls
+        var stack = stackToArray(this.stack).slice(3);
+
+        // add message at stack start
+        stack.unshift(args[0]);
+
+        // store back as log message
+        args[0] = stack.join('\n   at ');
+      }
+    }
+
     // Convert Error arguments to Object
     for (var idx in args) {
       if (args[idx] instanceof Error) {
-        args[idx] = parseNestedError(args[idx]);
+        args[idx] = args[idx].stack;
       }
     }
 
@@ -341,8 +361,11 @@ var ConsoleWrapper = (function (methods, undefined) {
     args = [prefix].concat(args);
     // via @paulirish console wrapper
     if (console) {
-      if (console[method]) {
-        if (console[method].apply) { console[method].apply(console, args); } else { console[method](args); } // nicer display in some browsers
+      // get a RED display for all methods displaying a stack
+      var console_method = (withStack) ? 'error' : method;
+
+      if (console[console_method]) {
+        if (console[console_method].apply) { console[console_method].apply(console, args); } else { console[console_method](args); } // nicer display in some browsers
       }
       else {
         if (console.log.apply) { console.log.apply(console, args); } else { console.log(args); } // nicer display in some browsers
