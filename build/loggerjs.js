@@ -340,9 +340,9 @@ LogEntry.prototype.toString = function () {
   entry += ' - ';
   entry += log.logLevel;
   entry += ' - ';
-  entry += log.logMessage;
-  entry += ' - ';
   entry += log.logLocation;
+  entry += ' - ';
+  entry += log.logMessage;
 
   return entry;
 };
