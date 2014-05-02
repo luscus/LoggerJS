@@ -61,6 +61,9 @@ Here is the option list
 
 ### Custom Logging Tasks
 
+Logging Taks are triggered each time a new LogEntry is generated.
+They are run after the outputing of the LogEntry.
+
 
 #### Create new LogTask
 
@@ -68,6 +71,7 @@ Here is the option list
           name: 'somename',
           status: <boolean>,
           logLevel : LoggerJS.<LEVEL>,
+          strict : <boolean>,
           task: function (logEntry) {
             /* do something.
                You can find the LogEntry API at the end of the README */
@@ -79,7 +83,8 @@ Here is the option list
 
 * `name`: is mandatory and provides information about the module
 * `status`: a boolean representing the task's activity state (default: true)
-* `logLevel`: minimum Log Level at which the Task will be active (default logger.status)
+* `logLevel`: minimum Log Level at which the Task will be active (default: logger.status)
+* `strict`: log level check is strict, the LogTask level and the LogEntry level must match (default: false)
 * `task`: a mandatory function awaiting a LogEntry object as parameter
 
 
@@ -336,7 +341,7 @@ Examples:
 
 ## LogEntry API
 
-### getLogEntry
+### toJson
 
 returns the full JSON Log Object
 

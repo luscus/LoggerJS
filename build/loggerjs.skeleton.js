@@ -180,8 +180,6 @@ var getLineEnd = function getFileNameFromLine (line) {
 var LogEntry = LogEntry || (function (global) {
 
 
-var log = {};
-
 
 function LogEntry (error, with_stack) {
 
@@ -190,16 +188,18 @@ function LogEntry (error, with_stack) {
     return new LogEntry();
   }
 
-  log = parseErrorToJson(error, with_stack);
+  var log = parseErrorToJson(error, with_stack);
   addEnvLogInformation(log);
+
+
+  this.toJson = function () {
+    return log;
+  };
 }
 
-LogEntry.prototype.getLogEntry = function () {
-  return log;
-};
-
 LogEntry.prototype.toString = function () {
-  var entry = '';
+  var log = this.toJson(),
+      entry = '';
 
 
   entry += this.getConsolePrefix();
@@ -210,7 +210,8 @@ LogEntry.prototype.toString = function () {
 };
 
 LogEntry.prototype.getConsolePrefix = function () {
-  var prefix = '';
+  var log = this.toJson(),
+      prefix = '';
 
   prefix += log.timestamp.toISOString();
   prefix += ' - ';
@@ -259,6 +260,7 @@ function LogTask (options) {
   this.name = options.name;
 
   this.status = (typeof options.status === 'boolean') ? options.status : true;
+  this.strict = (typeof options.strict === 'boolean') ? options.strict : false;
   this.log_level = (LOG_LEVELS.exists(options.logLevel)) ? options.logLevel : LOG_LEVELS.ERROR;
 }
 
@@ -286,6 +288,29 @@ function LogTask (options) {
   };
 
 })();
+
+
+function triggerLogTaskProcessing (entry) {
+  if (!entry || !(entry instanceof LogEntry)) {
+    throw new Error('triggerLogTaskProcessing awaits a LogEntry object as argument');
+  }
+
+  var log = entry.toJson();
+
+  // execute all logging tasks
+  for (var task_name in log_tasks) {
+
+    // check if the task isn't strict
+    // otherwise check if the log levels match
+    if (!log_tasks[task_name].strict || (log.logLevel === log_tasks[task_name].log_level)) {
+
+      // check if the log priority is right
+      if (LOG_LEVELS.checkPriority(log.logLevel, log_tasks[task_name].log_level)) {
+        log_tasks[task_name].task(entry);
+      }
+    }
+  }
+}
 
 var log_tasks = {};
 
@@ -324,12 +349,6 @@ var ConsoleWrapper = (function (methods, undefined) {
 
     var  entry = new LogEntry(this, withStack);
 
-    // execute all logging tasks
-    for (task_name in log_tasks) {
-      if (LOG_LEVELS.checkPriority(uppercase_method, log_tasks[task_name].log_level))
-        log_tasks[task_name].task(entry);
-    }
-
     if (withStack) {
       if (! (args[0] instanceof Error)) {
         // stack has to be cleaned from LoggerJS internal calls
@@ -366,6 +385,10 @@ var ConsoleWrapper = (function (methods, undefined) {
         if (console.log.apply) { console.log.apply(console, args); } else { console.log(args); } // nicer display in some browsers
       }
     }
+
+
+    // execute all logging tasks
+    triggerLogTaskProcessing(entry);
   };
 
   // method builder

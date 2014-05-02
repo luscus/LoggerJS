@@ -32,6 +32,7 @@
     }
 
     console.error(entry.toString());
+    triggerLogTaskProcessing(entry);
 
     // supress propagation
     return true;

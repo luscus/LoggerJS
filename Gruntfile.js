@@ -31,15 +31,7 @@ module.exports = function(grunt) {
           'build/loggerjs.js': [
             'src/logger/logger_header.tmpl',
             'src/environment/*.js',
-            'bower_components/cryptojs/rollups/sha1.js',
-            'src/log_levels.js',
-            'src/errorParser.js',
-            'src/entry/entry_header.tmpl',
-            'src/entry/LogEntry.js',
-            'src/entry/entry_footer.tmpl',
-            'src/task/LogTask.js',
-            'src/logger/ConsoleWrapper.js',
-            'src/logger/Logger.js',
+            'build/loggerjs.skeleton.js',
             'src/logger/logger_footer.tmpl'
           ]
         }

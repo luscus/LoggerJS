@@ -35,12 +35,6 @@ var ConsoleWrapper = (function (methods, undefined) {
 
     var  entry = new LogEntry(this, withStack);
 
-    // execute all logging tasks
-    for (task_name in log_tasks) {
-      if (LOG_LEVELS.checkPriority(uppercase_method, log_tasks[task_name].log_level))
-        log_tasks[task_name].task(entry);
-    }
-
     if (withStack) {
       if (! (args[0] instanceof Error)) {
         // stack has to be cleaned from LoggerJS internal calls
@@ -77,6 +71,10 @@ var ConsoleWrapper = (function (methods, undefined) {
         if (console.log.apply) { console.log.apply(console, args); } else { console.log(args); } // nicer display in some browsers
       }
     }
+
+
+    // execute all logging tasks
+    triggerLogTaskProcessing(entry);
   };
 
   // method builder

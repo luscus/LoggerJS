@@ -1,6 +1,4 @@
 
-var log = {};
-
 
 function LogEntry (error, with_stack) {
 
@@ -9,16 +7,18 @@ function LogEntry (error, with_stack) {
     return new LogEntry();
   }
 
-  log = parseErrorToJson(error, with_stack);
+  var log = parseErrorToJson(error, with_stack);
   addEnvLogInformation(log);
+
+
+  this.toJson = function () {
+    return log;
+  };
 }
 
-LogEntry.prototype.getLogEntry = function () {
-  return log;
-};
-
 LogEntry.prototype.toString = function () {
-  var entry = '';
+  var log = this.toJson(),
+      entry = '';
 
 
   entry += this.getConsolePrefix();
@@ -29,7 +29,8 @@ LogEntry.prototype.toString = function () {
 };
 
 LogEntry.prototype.getConsolePrefix = function () {
-  var prefix = '';
+  var log = this.toJson(),
+      prefix = '';
 
   prefix += log.timestamp.toISOString();
   prefix += ' - ';
