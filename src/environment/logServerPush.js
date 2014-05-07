@@ -53,7 +53,7 @@ function pushToLogServer (entry) {
   http_request.open('POST', logServerUrl, true);
   http_request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
 
-  http_request.send(JSON.stringify(entry.getLogEntry()));
+  http_request.send(JSON.stringify(entry.toJson()));
 }
 
 /**

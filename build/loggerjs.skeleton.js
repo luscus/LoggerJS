@@ -540,18 +540,6 @@ var logServerEnabled = false,
   };
 
 
-  // TODO: check if outdated - I can't remember code using this
-//   Logger.prototype.handle = function (error) {
-//     var entry = new LogEntry(this);
-
-//     if (logServerEnabled) {
-//       if (LOG_LEVELS.checkPriority(method.toUpperCase(), logServerLevel))
-//         pushToLogServer(entry.getLogEntry());
-//     }
-
-//     console.error(entry.toString());
-//   };
-
   Logger.prototype.useLogServer = function (url, level_filter) {
     logServerLevel = (LOG_LEVELS.exists(level_filter)) ? level_filter : LOG_LEVELS.ERROR;
     logServerEnabled = true;

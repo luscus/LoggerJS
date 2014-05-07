@@ -70,7 +70,7 @@ function pushToLogServer (entry) {
   http_request.open('POST', logServerUrl, true);
   http_request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
 
-  http_request.send(JSON.stringify(entry.getLogEntry()));
+  http_request.send(JSON.stringify(entry.toJson()));
 }
 
 /**
@@ -672,18 +672,6 @@ var logServerEnabled = false,
     return true;
   };
 
-
-  // TODO: check if outdated - I can't remember code using this
-//   Logger.prototype.handle = function (error) {
-//     var entry = new LogEntry(this);
-
-//     if (logServerEnabled) {
-//       if (LOG_LEVELS.checkPriority(method.toUpperCase(), logServerLevel))
-//         pushToLogServer(entry.getLogEntry());
-//     }
-
-//     console.error(entry.toString());
-//   };
 
   Logger.prototype.useLogServer = function (url, level_filter) {
     logServerLevel = (LOG_LEVELS.exists(level_filter)) ? level_filter : LOG_LEVELS.ERROR;
