@@ -1,4 +1,4 @@
-var extractLineFromStack = function extractLineFromStack (stack, isFromConsoleWrapper) {
+var extractLineFromStack = function extractLineFromStack (error) {
   /// <summary>
   /// Get the line/filename detail from a Webkit stack trace.  See http://stackoverflow.com/a/3806596/1037948
   /// </summary>
@@ -6,17 +6,8 @@ var extractLineFromStack = function extractLineFromStack (stack, isFromConsoleWr
 
   // some stacks use pretty print for the first line
   // so we have to use a regex to split at the right place
-  var line_array = stackToArray(stack),
-      line;
-
-  if (isFromConsoleWrapper) {
-    // correct line number according to how Log().write is implemented
-    line = line_array[3];
-  }
-  else {
-    // all other cases, take first line of the stack
-    line = line_array[1];
-  }
+  var line_array = cleanStack(error),
+      line = line_array[0];
 
   // fix for various display text
   //        line may have enclosing parenthesis
@@ -35,10 +26,30 @@ function stackToArray (stack) {
   return stack.split(/\n\s+at\s+/);
 }
 
+function stackArrayToString (stackArray) {
+  return stackArray.join('\n    at ');
+}
+
+function cleanStack (error) {
+  var array = stackToArray(error.stack),
+      stack;
+
+  if (error.isFromConsoleWrapper) {
+    // correct line number according to how Log().write is implemented
+    stack = array.slice(3);
+  }
+  else {
+    // all other cases, take first line of the stack
+    stack = array.slice(1);
+  }
+
+  return stack;
+}
+
 
 var path_delimiter = null;
-var parseErrorToJson = function parseErrorToJson (error, with_stack) {
-  with_stack = (typeof with_stack === 'boolean') ? with_stack : true;
+var parseErrorToJson = function parseErrorToJson (error) {
+  var with_stack = (LOG_LEVELS.withStack.indexOf(error.name) > -1) ? true : false;
 
   var log = {},
       endOfLine,
@@ -62,21 +73,23 @@ var parseErrorToJson = function parseErrorToJson (error, with_stack) {
       log.hash = CryptoJS.SHA1(log.logMessage).toString();
     }
 
-    if (error instanceof Error) {
-      // set Stack as message
-      // suppress any leading "ERROR: " String
-      log.logMessage = error.stack.replace(/^ERROR: /,'');
+    if (error.message instanceof Error || LOG_LEVELS.withStack.indexOf(error.name) > -1) {
+      // Format message from stack
+      //   - suppress leading lines depending on Error origin
+      var stackArray = cleanStack(error);
+
+      //   - add message at the top of the stack
+      stackArray.unshift(error.message);
+
+      //   - rebuild string
+      log.logMessage = stackArrayToString(stackArray);
     }
     else {
       log.logMessage = error.message;
     }
 
-    if (with_stack) {
-      log.stack = error.stack;
-    }
-
     if (!error.fileName) {
-      log.logLocation = extractLineFromStack(error.stack, error.isFromConsoleWrapper);
+      log.logLocation = extractLineFromStack(error);
     }
     else {
       log.logLocation = error.fileName;
@@ -98,6 +111,13 @@ var parseErrorToJson = function parseErrorToJson (error, with_stack) {
       log.logLocation += ':' + log.lineNumber;
     }
 
+
+    if (with_stack) {
+      log.stack = error.stack;
+    }
+    else {
+      log.logLocation = log.fileName + ':' + log.lineNumber;
+    }
   }
 
   return log;

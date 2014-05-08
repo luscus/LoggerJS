@@ -30,8 +30,8 @@ module.exports = function(grunt) {
           ],
           'build/loggerjs.js': [
             'src/logger/logger_header.tmpl',
-            'src/environment/*.js',
             'build/loggerjs.skeleton.js',
+            'src/environment/**/*.js',
             'src/logger/logger_footer.tmpl'
           ]
         }

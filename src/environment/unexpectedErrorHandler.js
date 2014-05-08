@@ -25,13 +25,16 @@
 
     error.name = 'ERROR';
 
-    entry = new LogEntry(error, true);
+    entry = new LogEntry(error);
 
-    if (logServerEnabled) {
-      pushToLogServer(entry);
-    }
-
+    // Output error
     console.error(entry.toString());
+
+    // Execute handlers
+    pushToLogServer(entry);
+    handleWebConsole(entry);
+
+    // Trigger tasks
     triggerLogTaskProcessing(entry);
 
     // supress propagation

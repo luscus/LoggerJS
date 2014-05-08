@@ -1,6 +1,6 @@
 {
     "name": "LoggerJS",
-    "version": "0.0.10",
+    "version": "0.0.11",
     "devDependencies": {
         "grunt": "*",
         "grunt-contrib-jshint": "*",

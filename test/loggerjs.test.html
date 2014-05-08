@@ -9,20 +9,38 @@
     </head>
     <body>
 
-        <h1>You have to open your Browser DEV-Tools to see the tests in the Console</h1>
+        <h1>LoggerJS (very) simple Tests</h1>
+        You have to open your Browser DEV-Tools to see the tests in the Console <br/>
+        <button onclick="retest()">Run Test</button>
+
+        <h2>Log Server URL</h2>
+        <input id="logeServerUrl" type="text" placeholder="http://host:port" />
+
+
+        <h2>Web Console</h2>
+        <div id="WCParent"></div>
 
         <script type="application/javascript">
-            var options = {
-                namespace : 'loggerjs.test.run',
-                uniqueLogKeys: false,
-                tags: ['TEST','LOGGER']
-            },
-                logger = new LoggerJS.Logger(options);
+            function retest () {
+                //document.getElementById('WCParent').innerHTML = '';
+                runTest();
+            }
+
+            function runTest () {
+                var logeServerUrl = document.getElementById('logeServerUrl').value;
+
+
+                var options = {
+                    namespace : 'loggerjs.test.run',
+                    uniqueLogKeys: false,
+                    tags: ['TEST','LOGGER']
+                },
+                    logger = new LoggerJS.Logger(options);
 
 
 
-            // Handle unexpected errors
-            var options = {
+                // Handle unexpected errors
+                var options = {
                     name: 'error',
                     status: true,
                     strict: false,
@@ -31,34 +49,33 @@
                         console.log('error TASK running...');
                     }
                 },
-                task = new LoggerJS.LogTask(options);
+                    task = new LoggerJS.LogTask(options);
 
-            logger.registerLogTask(task);
+                logger.registerLogTask(task);
 
+                logger.useWebConsole('WCParent');
 
+                logger.setLogLevel(LoggerJS.DEBUG);
 
-            console.error('LoggerJS',LoggerJS);
-            console.log(logger.getNamespace());
+                for (var idx in logger.log_priority) {
+                    var method = logger.log_priority[idx];
+                    logger[method.toLowerCase()]('ein kleiner "'+method+'" output Test');
+                }
 
-            logger.setLogLevel(LoggerJS.DEBUG);
+                if (logeServerUrl)
+                    logger.useLogServer(logeServerUrl);
 
-            for (var idx in logger.log_priority) {
-                var method = logger.log_priority[idx];
-                logger[method.toLowerCase()]('ein kleiner "'+method+'" output Test');
+                logger.toggleStatus();
+                logger.setLogLevel(LoggerJS.ERROR);
+                logger.disable();
+
+                logger.log('log Object:', {test:'Ojects'});
+                logger.error(new Error('log Error Object test'));
+
+                logger.enable();
+
+                undefinedVariable.doit();
             }
-
-            logger.toggleStatus();
-            logger.setLogLevel(LoggerJS.ERROR);
-            logger.disable();
-
-            logger.log('log Object:', {test:'Ojects'});
-            logger.log(new Error('log Error Object test'));
-
-            logger.enable();
-
-
-
-            test.doit();
         </script>
     </body>
 </html>

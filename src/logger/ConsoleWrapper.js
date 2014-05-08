@@ -1,4 +1,5 @@
-var log_tasks = {};
+var log_tasks = {},
+    webConsoleActive = false;
 
 var ConsoleWrapper = (function (methods, undefined) {
   var Log = Error; // does this do anything?  proper inheritance...?
@@ -33,7 +34,7 @@ var ConsoleWrapper = (function (methods, undefined) {
     // change error.name to the method name
     this.name = uppercase_method;
 
-    var  entry = new LogEntry(this, withStack);
+    var  entry = new LogEntry(this);
 
     if (withStack) {
       if (! (args[0] instanceof Error)) {
@@ -71,7 +72,14 @@ var ConsoleWrapper = (function (methods, undefined) {
         if (console.log.apply) { console.log.apply(console, args); } else { console.log(args); } // nicer display in some browsers
       }
     }
+    else {
+      // console is not available
+      // activating WebConsole
+      webConsoleActive = true;
+    }
 
+
+    handleWebConsole(entry);
 
     // execute all logging tasks
     triggerLogTaskProcessing(entry);
@@ -103,3 +111,10 @@ var ConsoleWrapper = (function (methods, undefined) {
 
   return result; // expose
 })(LOG_LEVELS.log_priority);
+
+
+function handleWebConsole (entry) {
+  if (webConsoleActive && addWebConsoleEntry) {
+    addWebConsoleEntry(entry);
+  }
+}

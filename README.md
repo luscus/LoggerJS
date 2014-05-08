@@ -5,7 +5,8 @@ LoggerJS enables client side logging using the console (if available) and pushin
 Features:
 
 * Uses the console to output information to the Browser Developer Tools.
-* Support sending the log entry (as JSON) to some Log Server.
+* Supports sending the log entry (as JSON) to some Log Server.
+* Supports output to the document if console is not available (no CSS provided).
 * custom tasks to be processed on specified log levels.
 * Handles unexpected errors in the window.
 * Delivers a skeleton lib to build uppon (example: [node-LoogerJS](https://github.com/luscus/node-LoggerJS))
@@ -200,6 +201,46 @@ Examples:
 
 ----------
 
+### Web Console (no available in the skeleton)
+
+
+#### useWebConsole
+
+Parameters:
+
+* parentId (String): ID of the Web Console's parent element (default: Web Console becomes first child of window.document.body)
+* consoleId (String): ID of the Web Console's DIV element (default: LJSWebConsole )
+
+Examples:
+
+    logger.useWebConsole();
+
+    logger.useWebConsole('myCustomParentElement');
+
+    logger.useWebConsole('myCustomParentElement', 'myCustomWebConsoleId');
+
+#### enableWebConsole
+
+Examples:
+
+    logger.enableWebConsole();
+
+#### enableWebConsole
+
+Examples:
+
+    logger.disableWebConsole();
+
+#### cleanWebConsole
+
+Removes console content.
+
+Examples:
+
+    logger.cleanWebConsole();
+
+----------
+
 ### Log Server
 
 #### useLogServer
@@ -310,15 +351,16 @@ Examples:
 
 Parameters:
 
+* name: the Task's name
 * status: boolean representing the task's activity state
 
 Examples:
 
     // Logs will be outputed
-    logger.setLogTaskStatus(name, true);
+    logger.setLogTaskStatus('xyz', true);
 
     // no logs entries generated
-    logger.setLogTaskStatus(name, false);
+    logger.setLogTaskStatus('xyz', false);
 
 
 #### unregisterLogTask

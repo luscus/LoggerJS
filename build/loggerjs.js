@@ -1,136 +1,5 @@
 var LoggerJS = LoggerJS || (function (global) {
 
-
-/**
-* This function extends the Log with information
-* specific to the environment of the Logger
-*
-* Example: actual url in the Front-End, ProcessId in the Back-End
-*
-* @param log a reference on the log Object
-*/
-var addEnvLogInformation = function addEnvLogInformation (log) {
-
-    log.userLocation = window.location.href;
-
-};
-
-
-var http_request = false,
-    requestMethod;
-
-
-if (window.XMLHttpRequest) { // Mozilla, Safari,...
-  requestMethod = function () {
-    var request = new XMLHttpRequest();
-    if (request.overrideMimeType) {
-      request.overrideMimeType('application/json');
-    }
-    return request;
-  };
-} else if (window.ActiveXObject) { // IE
-  try {
-    new ActiveXObject("Msxml2.XMLHTTP");
-
-    requestMethod = function () {
-      return new ActiveXObject("Msxml2.XMLHTTP");
-    };
-  }
-  /*jshint -W002 */
-  catch (err) {
-    try {
-      new ActiveXObject("Microsoft.XMLHTTP");
-
-      requestMethod = function () {
-        return new ActiveXObject("Microsoft.XMLHTTP");
-      };
-    }
-    catch (err) {}
-  }
-}
-
-
-/**
-* This function push the log entry to
-* the specified Log Server
-*
-* @param entry a log Object
-*/
-function pushToLogServer (entry) {
-  http_request = requestMethod();
-
-  if (!http_request) {
-    console.error('ERROR - pushToLogServer: no http_request coultd be instanciated');
-    return false;
-  }
-
-
-  http_request.onreadystatechange = checkPush;
-
-  http_request.open('POST', logServerUrl, true);
-  http_request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-
-  http_request.send(JSON.stringify(entry.toJson()));
-}
-
-/**
-* This function checks the Request status.
-* If the Log Entry could not be sent to the
-* Log Server, an connection Error is thrown
-*/
-function checkPush () {
-  if (this.readyState === 4) {
-    if (this.status !== 200) {
-      console.error('Error while pushing to LogServer', this);
-    }
-  }
-}
-
-
-/**
-* Global Error Handling definition.
-* Here is the environment specific handler
-* for unexpected errors.
-*/
-(function (global) {
-
-  function UnexpectedErrorHandler (message, filename, line, column, error) {
-    var entry = null;
-
-    if (error) {
-      if (!error.fileName && filename)
-        error.fileName = filename;
-
-      if (!error.lineNumber && line)
-        error.lineNumber = line;
-    }
-    else {
-      error = new Error();
-      error.message = message;
-      error.fileName = filename;
-      error.lineNumber = line;
-    }
-
-    error.name = 'ERROR';
-
-    entry = new LogEntry(error, true);
-
-    if (logServerEnabled) {
-      pushToLogServer(entry);
-    }
-
-    console.error(entry.toString());
-    triggerLogTaskProcessing(entry);
-
-    // supress propagation
-    return true;
-  }
-
-  if (window)
-    window.onerror = window.onerror || UnexpectedErrorHandler;
-
-})(this);
-
 /*
 CryptoJS v3.1.2
 code.google.com/p/crypto-js
@@ -190,7 +59,7 @@ LOG_LEVELS.exists = function (level) {
   return (LOG_LEVELS.priority[level]) ? true : false;
 };
 
-var extractLineFromStack = function extractLineFromStack (stack, isFromConsoleWrapper) {
+var extractLineFromStack = function extractLineFromStack (error) {
   /// <summary>
   /// Get the line/filename detail from a Webkit stack trace.  See http://stackoverflow.com/a/3806596/1037948
   /// </summary>
@@ -198,17 +67,8 @@ var extractLineFromStack = function extractLineFromStack (stack, isFromConsoleWr
 
   // some stacks use pretty print for the first line
   // so we have to use a regex to split at the right place
-  var line_array = stackToArray(stack),
-      line;
-
-  if (isFromConsoleWrapper) {
-    // correct line number according to how Log().write is implemented
-    line = line_array[3];
-  }
-  else {
-    // all other cases, take first line of the stack
-    line = line_array[1];
-  }
+  var line_array = cleanStack(error),
+      line = line_array[0];
 
   // fix for various display text
   //        line may have enclosing parenthesis
@@ -227,10 +87,30 @@ function stackToArray (stack) {
   return stack.split(/\n\s+at\s+/);
 }
 
+function stackArrayToString (stackArray) {
+  return stackArray.join('\n    at ');
+}
+
+function cleanStack (error) {
+  var array = stackToArray(error.stack),
+      stack;
+
+  if (error.isFromConsoleWrapper) {
+    // correct line number according to how Log().write is implemented
+    stack = array.slice(3);
+  }
+  else {
+    // all other cases, take first line of the stack
+    stack = array.slice(1);
+  }
+
+  return stack;
+}
+
 
 var path_delimiter = null;
-var parseErrorToJson = function parseErrorToJson (error, with_stack) {
-  with_stack = (typeof with_stack === 'boolean') ? with_stack : true;
+var parseErrorToJson = function parseErrorToJson (error) {
+  var with_stack = (LOG_LEVELS.withStack.indexOf(error.name) > -1) ? true : false;
 
   var log = {},
       endOfLine,
@@ -254,21 +134,23 @@ var parseErrorToJson = function parseErrorToJson (error, with_stack) {
       log.hash = CryptoJS.SHA1(log.logMessage).toString();
     }
 
-    if (error instanceof Error) {
-      // set Stack as message
-      // suppress any leading "ERROR: " String
-      log.logMessage = error.stack.replace(/^ERROR: /,'');
+    if (error.message instanceof Error || LOG_LEVELS.withStack.indexOf(error.name) > -1) {
+      // Format message from stack
+      //   - suppress leading lines depending on Error origin
+      var stackArray = cleanStack(error);
+
+      //   - add message at the top of the stack
+      stackArray.unshift(error.message);
+
+      //   - rebuild string
+      log.logMessage = stackArrayToString(stackArray);
     }
     else {
       log.logMessage = error.message;
     }
 
-    if (with_stack) {
-      log.stack = error.stack;
-    }
-
     if (!error.fileName) {
-      log.logLocation = extractLineFromStack(error.stack, error.isFromConsoleWrapper);
+      log.logLocation = extractLineFromStack(error);
     }
     else {
       log.logLocation = error.fileName;
@@ -290,6 +172,13 @@ var parseErrorToJson = function parseErrorToJson (error, with_stack) {
       log.logLocation += ':' + log.lineNumber;
     }
 
+
+    if (with_stack) {
+      log.stack = error.stack;
+    }
+    else {
+      log.logLocation = log.fileName + ':' + log.lineNumber;
+    }
   }
 
   return log;
@@ -445,7 +334,8 @@ function triggerLogTaskProcessing (entry) {
   }
 }
 
-var log_tasks = {};
+var log_tasks = {},
+    webConsoleActive = false;
 
 var ConsoleWrapper = (function (methods, undefined) {
   var Log = Error; // does this do anything?  proper inheritance...?
@@ -480,7 +370,7 @@ var ConsoleWrapper = (function (methods, undefined) {
     // change error.name to the method name
     this.name = uppercase_method;
 
-    var  entry = new LogEntry(this, withStack);
+    var  entry = new LogEntry(this);
 
     if (withStack) {
       if (! (args[0] instanceof Error)) {
@@ -518,7 +408,14 @@ var ConsoleWrapper = (function (methods, undefined) {
         if (console.log.apply) { console.log.apply(console, args); } else { console.log(args); } // nicer display in some browsers
       }
     }
+    else {
+      // console is not available
+      // activating WebConsole
+      webConsoleActive = true;
+    }
 
+
+    handleWebConsole(entry);
 
     // execute all logging tasks
     triggerLogTaskProcessing(entry);
@@ -550,6 +447,13 @@ var ConsoleWrapper = (function (methods, undefined) {
 
   return result; // expose
 })(LOG_LEVELS.log_priority);
+
+
+function handleWebConsole (entry) {
+  if (webConsoleActive && addWebConsoleEntry) {
+    addWebConsoleEntry(entry);
+  }
+}
 
 
 var log_namespace = null,
@@ -749,6 +653,235 @@ var logServerEnabled = false,
   };
 
 })();
+
+
+/**
+* This function extends the Log with information
+* specific to the environment of the Logger
+*
+* Example: actual url in the Front-End, ProcessId in the Back-End
+*
+* @param log a reference on the log Object
+*/
+var addEnvLogInformation = function addEnvLogInformation (log) {
+
+    log.userLocation = window.location.href;
+
+};
+
+
+var http_request = false,
+    requestMethod;
+
+
+if (window.XMLHttpRequest) { // Mozilla, Safari,...
+  requestMethod = function () {
+    var request = new XMLHttpRequest();
+    if (request.overrideMimeType) {
+      request.overrideMimeType('application/json');
+    }
+    return request;
+  };
+} else if (window.ActiveXObject) { // IE
+  try {
+    new ActiveXObject("Msxml2.XMLHTTP");
+
+    requestMethod = function () {
+      return new ActiveXObject("Msxml2.XMLHTTP");
+    };
+  }
+  /*jshint -W002 */
+  catch (err) {
+    try {
+      new ActiveXObject("Microsoft.XMLHTTP");
+
+      requestMethod = function () {
+        return new ActiveXObject("Microsoft.XMLHTTP");
+      };
+    }
+    catch (err) {}
+  }
+}
+
+
+/**
+* This function push the log entry to
+* the specified Log Server
+*
+* @param entry a log Object
+*/
+function pushToLogServer (entry) {
+
+  if (!logServerEnabled) {
+    return false;
+  }
+
+  http_request = requestMethod();
+
+  if (!http_request) {
+    console.error('LoggerJS::pushToLogServer - no HTTP Request coultd be instanciated');
+    return false;
+  }
+
+
+  http_request.onreadystatechange = checkPush;
+
+  http_request.open('POST', logServerUrl, true);
+  http_request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+
+
+  http_request.send(JSON.stringify(entry.toJson()));
+}
+
+/**
+* This function checks the Request status.
+* If the Log Entry could not be sent to the
+* Log Server, an connection Error is thrown
+*/
+function checkPush () {
+  if (this.readyState === 4) {
+    if (this.status !== 200) {
+      var error;
+
+      if (this.status) {
+        error = new Error('LogServer returned HTTP StatusCode '+this.status+', url: '+logServerUrl);
+        error.name = 'LoggerJS::LogServerException';
+      }
+      else {
+        error = new Error('LogServer unreachable, url: '+logServerUrl);
+        error.name = 'LoggerJS::LogServerException';
+      }
+
+      entry = new LogEntry(error);
+
+      // Output error
+      console.error(entry.toString());
+      handleWebConsole(entry);
+    }
+  }
+}
+
+
+/**
+* Global Error Handling definition.
+* Here is the environment specific handler
+* for unexpected errors.
+*/
+(function (global) {
+
+  function UnexpectedErrorHandler (message, filename, line, column, error) {
+    var entry = null;
+
+    if (error) {
+      if (!error.fileName && filename)
+        error.fileName = filename;
+
+      if (!error.lineNumber && line)
+        error.lineNumber = line;
+    }
+    else {
+      error = new Error();
+      error.message = message;
+      error.fileName = filename;
+      error.lineNumber = line;
+    }
+
+    error.name = 'ERROR';
+
+    entry = new LogEntry(error);
+
+    // Output error
+    console.error(entry.toString());
+
+    // Execute handlers
+    pushToLogServer(entry);
+    handleWebConsole(entry);
+
+    // Trigger tasks
+    triggerLogTaskProcessing(entry);
+
+    // supress propagation
+    return true;
+  }
+
+  if (window)
+    window.onerror = window.onerror || UnexpectedErrorHandler;
+
+})(this);
+
+var webConsoleParentId,
+    webConsoleParent,
+    webConsoleId = 'LJSWebConsole',
+    webConsole;
+
+function addWebConsole () {
+  var inbody = false;
+
+  if (webConsoleParentId) {
+    webConsoleParent = window.document.getElementById(webConsoleParentId);
+  }
+
+  if (!parent) {
+    webConsoleParent = window.document.body;
+    inbody = true;
+  }
+
+  webConsole = document.createElement('div');
+  webConsole.id = webConsoleId;
+
+  if (inbody) {
+    if (webConsoleParent.firstChild) {
+      webConsoleParent.insertBefore(webConsole, webConsoleParent.firstChild);
+    }
+    else {
+      webConsoleParent.appendChild(webConsole);
+    }
+  }
+  else {
+    webConsoleParent.appendChild(webConsole);
+  }
+}
+
+function addWebConsoleEntry (entry) {
+  if (!webConsole) {
+    addWebConsole();
+  }
+
+  var logText = entry.toString().replace(/\n/g, '<br/>&nbsp;&nbsp;&nbsp;&nbsp;');
+
+  var newLogEntryDiv = document.createElement('div');
+  newLogEntryDiv.id = entry.namespace + '-' + entry.hash;
+  newLogEntryDiv.className = 'LJS' + entry.logLevel;
+
+  newLogEntryDiv.innerHTML = logText;
+
+  if (webConsole.firstChild) {
+    webConsole.insertBefore(newLogEntryDiv, webConsole.firstChild);
+  }
+  else {
+    webConsole.appendChild(newLogEntryDiv);
+  }
+}
+
+
+Logger.prototype.useWebConsole = function (parentId, consoleId) {
+  webConsoleParentId = parentId || webConsoleParentId;
+  webConsoleId = consoleId || webConsoleId;
+  webConsoleActive = true;
+};
+
+Logger.prototype.enableWebConsole = function (parentId, consoleId) {
+  webConsoleActive = true;
+};
+
+Logger.prototype.disableWebConsole = function (parentId, consoleId) {
+  webConsoleActive = false;
+  webConsoleParent.innerHTML = '';
+};
+
+Logger.prototype.cleanWebConsole = function (parentId, consoleId) {
+  webConsole.innerHTML = '';
+};
 
 
   var module = {

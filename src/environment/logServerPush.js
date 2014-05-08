@@ -40,10 +40,15 @@ if (window.XMLHttpRequest) { // Mozilla, Safari,...
 * @param entry a log Object
 */
 function pushToLogServer (entry) {
+
+  if (!logServerEnabled) {
+    return false;
+  }
+
   http_request = requestMethod();
 
   if (!http_request) {
-    console.error('ERROR - pushToLogServer: no http_request coultd be instanciated');
+    console.error('LoggerJS::pushToLogServer - no HTTP Request coultd be instanciated');
     return false;
   }
 
@@ -52,6 +57,7 @@ function pushToLogServer (entry) {
 
   http_request.open('POST', logServerUrl, true);
   http_request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+
 
   http_request.send(JSON.stringify(entry.toJson()));
 }
@@ -64,7 +70,22 @@ function pushToLogServer (entry) {
 function checkPush () {
   if (this.readyState === 4) {
     if (this.status !== 200) {
-      console.error('Error while pushing to LogServer', this);
+      var error;
+
+      if (this.status) {
+        error = new Error('LogServer returned HTTP StatusCode '+this.status+', url: '+logServerUrl);
+        error.name = 'LoggerJS::LogServerException';
+      }
+      else {
+        error = new Error('LogServer unreachable, url: '+logServerUrl);
+        error.name = 'LoggerJS::LogServerException';
+      }
+
+      entry = new LogEntry(error);
+
+      // Output error
+      console.error(entry.toString());
+      handleWebConsole(entry);
     }
   }
 }
