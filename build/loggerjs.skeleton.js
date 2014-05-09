@@ -125,7 +125,7 @@ var parseErrorToJson = function parseErrorToJson (error) {
     log.namespace = log_namespace;
     log.tags = log_tags;
     log.timestamp = new Date();
-    log.logLevel = error.name;
+    log.logLevel = error.name.toUpperCase();
     log.uniqueKey = uniqueLogKeys;
 
     if (uniqueLogKeys) {
