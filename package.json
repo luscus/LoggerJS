@@ -1,6 +1,6 @@
 {
     "name": "LoggerJS",
-    "version": "0.0.11",
+    "version": "0.0.12",
     "devDependencies": {
         "grunt": "*",
         "grunt-contrib-jshint": "*",
@@ -8,5 +8,9 @@
         "grunt-contrib-concat": "*",
         "grunt-contrib-clean": "*",
         "load-grunt-tasks": "*"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:luscus/LoggerJS.git"
     }
 }

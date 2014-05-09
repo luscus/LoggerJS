@@ -34,6 +34,11 @@ function cleanStack (error) {
   var array = stackToArray(error.stack),
       stack;
 
+  if (array.length < 2) {
+    return array;
+  }
+
+
   if (error.isFromConsoleWrapper) {
     // correct line number according to how Log().write is implemented
     stack = array.slice(3);
