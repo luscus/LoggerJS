@@ -12,6 +12,7 @@
         <h1>LoggerJS (very) simple Tests</h1>
         You have to open your Browser DEV-Tools to see the tests in the Console <br/>
         <button onclick="retest()">Run Test</button>
+        <button onclick="clearConsole()">Clear Console</button>
 
         <h2>Log Server URL</h2>
         <input id="logeServerUrl" type="text" placeholder="http://host:port" />
@@ -21,21 +22,27 @@
         <div id="WCParent"></div>
 
         <script type="application/javascript">
+            var options = {
+                    namespace : 'loggerjs.test.run',
+                    uniqueLogKeys: false,
+                    tags: ['TEST','LOGGER']
+                },
+                logger = new LoggerJS.Logger(options);
+
             function retest () {
                 //document.getElementById('WCParent').innerHTML = '';
                 runTest();
+            }
+
+            function clearConsole () {
+                //document.getElementById('WCParent').innerHTML = '';
+                logger.cleanWebConsole();
             }
 
             function runTest () {
                 var logeServerUrl = document.getElementById('logeServerUrl').value;
 
 
-                var options = {
-                    namespace : 'loggerjs.test.run',
-                    uniqueLogKeys: false,
-                    tags: ['TEST','LOGGER']
-                },
-                    logger = new LoggerJS.Logger(options);
 
 
 
