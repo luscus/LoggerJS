@@ -1,0 +1,21 @@
+
+module.exports = {
+  Logger: Logger,
+  LogTask: LogTask,
+  LogEntry: LogEntry,
+  LOG_LEVELS: LOG_LEVELS,
+  extractLineFromStack: extractLineFromStack,
+  stackToArray: stackToArray,
+  cleanStack: cleanStack,
+  parseErrorToJson: parseErrorToJson,
+  getLineEnd: getLineEnd,
+  triggerLogTaskProcessing: triggerLogTaskProcessing,
+  ConsoleWrapper: ConsoleWrapper,
+  handleWebConsole: handleWebConsole,
+  LoggerInstanciationError: LoggerInstanciationError,
+  pushToLogServer: pushToLogServer,
+  checkPush: checkPush,
+  addWebConsole: addWebConsole,
+  addWebConsoleEntry: addWebConsoleEntry,
+  loggerJsModule: loggerJsModule
+};

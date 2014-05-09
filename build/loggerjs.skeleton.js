@@ -14,6 +14,13 @@ f)).finalize(b)}}});var s=p.algo={};return p}(Math);
 (function(){var e=CryptoJS,m=e.lib,p=m.WordArray,j=m.Hasher,l=[],m=e.algo.SHA1=j.extend({_doReset:function(){this._hash=new p.init([1732584193,4023233417,2562383102,271733878,3285377520])},_doProcessBlock:function(f,n){for(var b=this._hash.words,h=b[0],g=b[1],e=b[2],k=b[3],j=b[4],a=0;80>a;a++){if(16>a)l[a]=f[n+a]|0;else{var c=l[a-3]^l[a-8]^l[a-14]^l[a-16];l[a]=c<<1|c>>>31}c=(h<<5|h>>>27)+j+l[a];c=20>a?c+((g&e|~g&k)+1518500249):40>a?c+((g^e^k)+1859775393):60>a?c+((g&e|g&k|e&k)-1894007588):c+((g^e^
 k)-899497514);j=k;k=e;e=g<<30|g>>>2;g=h;h=c}b[0]=b[0]+h|0;b[1]=b[1]+g|0;b[2]=b[2]+e|0;b[3]=b[3]+k|0;b[4]=b[4]+j|0},_doFinalize:function(){var f=this._data,e=f.words,b=8*this._nDataBytes,h=8*f.sigBytes;e[h>>>5]|=128<<24-h%32;e[(h+64>>>9<<4)+14]=Math.floor(b/4294967296);e[(h+64>>>9<<4)+15]=b;f.sigBytes=4*e.length;this._process();return this._hash},clone:function(){var e=j.clone.call(this);e._hash=this._hash.clone();return e}});e.SHA1=j._createHelper(m);e.HmacSHA1=j._createHmacHelper(m)})();
 
+var loggerJsModule,
+    pathSep = null;
+
+var logNamespace = null,
+    uniqueLogKeys = true,
+    logTags = [];
+
 var LOG_LEVELS = {};
 
 // log LOG_LEVELS
@@ -111,7 +118,6 @@ function cleanStack (error) {
 }
 
 
-var path_delimiter = null;
 var parseErrorToJson = function parseErrorToJson (error) {
   var with_stack = (LOG_LEVELS.withStack.indexOf(error.name) > -1) ? true : false;
 
@@ -184,16 +190,20 @@ var parseErrorToJson = function parseErrorToJson (error) {
     }
   }
 
+  // add environment specific data
+  // see src/environment/logExtender.js
+  addEnvLogInformation(log);
+
   return log;
 };
 
 
 var getLineEnd = function getFileNameFromLine (line) {
-  if (!path_delimiter) {
-    path_delimiter = (line.lastIndexOf('/') > 0) ? '/' : '\\';
+  if (!pathSep) {
+    pathSep = (line.lastIndexOf('\\') > 0) ? '\\' : '/';
   }
 
-  var index = line.lastIndexOf(path_delimiter) + 1;
+  var index = line.lastIndexOf(pathSep) + 1;
 
   if (index > 0) {
     return line.substring(index);
@@ -202,25 +212,21 @@ var getLineEnd = function getFileNameFromLine (line) {
   return line;
 };
 
-var LogEntry = LogEntry || (function (global) {
 
 
-
-function LogEntry (error, with_stack) {
+function LogEntry (error) {
 
   // Enforce instanciation
   if (!(this instanceof LogEntry)) {
     return new LogEntry();
   }
 
-  var log = parseErrorToJson(error, with_stack);
-  addEnvLogInformation(log);
-
-
-  this.toJson = function () {
-    return log;
-  };
+  this.log = parseErrorToJson(error);
 }
+
+LogEntry.prototype.toJson = function () {
+  return this.log;
+};
 
 LogEntry.prototype.toString = function () {
   var log = this.toJson(),
@@ -240,7 +246,7 @@ LogEntry.prototype.getConsolePrefix = function () {
 
   prefix += log.timestamp.toISOString();
   prefix += ' - ';
-  prefix += log_namespace;
+  prefix += logNamespace;
   prefix += ' - ';
   prefix += log.logLevel;
   prefix += ' - ';
@@ -249,10 +255,6 @@ LogEntry.prototype.getConsolePrefix = function () {
 
   return prefix;
 };
-
-
-  return LogEntry;
-})(this);
 
 function LogTask (options) {
   // Enforce instanciation
@@ -286,33 +288,29 @@ function LogTask (options) {
 
   this.status = (typeof options.status === 'boolean') ? options.status : true;
   this.strict = (typeof options.strict === 'boolean') ? options.strict : false;
-  this.log_level = (LOG_LEVELS.exists(options.logLevel)) ? options.logLevel : LOG_LEVELS.ERROR;
+  this.logLevel = (LOG_LEVELS.exists(options.logLevel)) ? options.logLevel : logLevelS.ERROR;
 }
 
 
 
-(function () {
-
-  LogTask.prototype.setLogLevel = function (log_level) {
-    if (LOG_LEVELS.exists(log_level)) {
-      this.log_level = log_level;
-      this.status = true;
-    }
-  };
-
-  LogTask.prototype.disable = function () {
-    this.status = false;
-  };
-
-  LogTask.prototype.enable = function () {
+LogTask.prototype.setLogLevel = function (logLevel) {
+  if (LOG_LEVELS.exists(logLevel)) {
+    this.logLevel = logLevel;
     this.status = true;
-  };
+  }
+};
 
-  LogTask.prototype.setStatus = function (status) {
-    this.status= (typeof status === 'boolean') ? status : false;
-  };
+LogTask.prototype.disable = function () {
+  this.status = false;
+};
 
-})();
+LogTask.prototype.enable = function () {
+  this.status = true;
+};
+
+LogTask.prototype.setStatus = function (status) {
+  this.status= (typeof status === 'boolean') ? status : false;
+};
 
 
 function triggerLogTaskProcessing (entry) {
@@ -323,15 +321,15 @@ function triggerLogTaskProcessing (entry) {
   var log = entry.toJson();
 
   // execute all logging tasks
-  for (var task_name in log_tasks) {
+  for (var taskName in logTasks) {
 
     // check if the task isn't strict
     // otherwise check if the log levels match
-    if (!log_tasks[task_name].strict || (log.logLevel === log_tasks[task_name].log_level)) {
+    if (!logTasks[taskName].strict || (log.logLevel === logTasks[taskName].logLevel)) {
 
       // check if the log priority is right
-      if (LOG_LEVELS.checkPriority(log.logLevel, log_tasks[task_name].log_level)) {
-        log_tasks[task_name].task(entry);
+      if (logLevelS.checkPriority(log.logLevel, logTasks[taskName].logLevel)) {
+        logTasks[taskName].task(entry);
       }
     }
   }
@@ -459,9 +457,6 @@ function handleWebConsole (entry) {
 }
 
 
-var log_namespace = null,
-    uniqueLogKeys = true,
-    log_tags = [];
 
 /**
 *
@@ -485,7 +480,7 @@ function Logger (options) {
   }
 
   if (options.tags) {
-    log_tags = options.tags;
+    logTags = options.tags;
   }
 
 
@@ -497,7 +492,7 @@ function Logger (options) {
   }
 
 
-  log_namespace = options.namespace;
+  logNamespace = options.namespace;
 
   this.status = (typeof options.status === 'boolean') ? options.status : true;
   this.log_level = (LOG_LEVELS.exists(options.logLevel)) ? options.logLevel : LOG_LEVELS.ERROR;
@@ -527,7 +522,6 @@ var logServerEnabled = false,
     logServerUrl = null;
 
 
-(function () {
   var property = null;
 
   for (property in LOG_LEVELS) {
@@ -558,11 +552,11 @@ var logServerEnabled = false,
   };
 
   Logger.prototype.getNamespace = function () {
-    return log_namespace;
+    return logNamespace;
   };
 
   Logger.prototype.getTags = function () {
-    return log_tags;
+    return logTags;
   };
 
   Logger.prototype.be = function (log_level) {
@@ -654,5 +648,3 @@ var logServerEnabled = false,
     if (task instanceof LogTask && log_tasks[task.name])
       delete log_tasks[task.name];
   };
-
-})();

@@ -2,36 +2,36 @@
 var http_request = false,
     requestMethod;
 
-
-if (window.XMLHttpRequest) { // Mozilla, Safari,...
-  requestMethod = function () {
-    var request = new XMLHttpRequest();
-    if (request.overrideMimeType) {
-      request.overrideMimeType('application/json');
-    }
-    return request;
-  };
-} else if (window.ActiveXObject) { // IE
-  try {
-    new ActiveXObject("Msxml2.XMLHTTP");
-
+if (window) {
+  if (window.XMLHttpRequest) { // Mozilla, Safari,...
     requestMethod = function () {
-      return new ActiveXObject("Msxml2.XMLHTTP");
+      var request = new XMLHttpRequest();
+      if (request.overrideMimeType) {
+        request.overrideMimeType('application/json');
+      }
+      return request;
     };
-  }
-  /*jshint -W002 */
-  catch (err) {
+  } else if (window.ActiveXObject) { // IE
     try {
-      new ActiveXObject("Microsoft.XMLHTTP");
+      new ActiveXObject("Msxml2.XMLHTTP");
 
       requestMethod = function () {
-        return new ActiveXObject("Microsoft.XMLHTTP");
+        return new ActiveXObject("Msxml2.XMLHTTP");
       };
     }
-    catch (err) {}
+    /*jshint -W002 */
+    catch (err) {
+      try {
+        new ActiveXObject("Microsoft.XMLHTTP");
+
+        requestMethod = function () {
+          return new ActiveXObject("Microsoft.XMLHTTP");
+        };
+      }
+      catch (err) {}
+    }
   }
 }
-
 
 /**
 * This function push the log entry to
@@ -41,7 +41,7 @@ if (window.XMLHttpRequest) { // Mozilla, Safari,...
 */
 function pushToLogServer (entry) {
 
-  if (!logServerEnabled) {
+  if (!logServerEnabled && requestMethod) {
     return false;
   }
 

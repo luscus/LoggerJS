@@ -3,38 +3,54 @@ module.exports = function(grunt) {
   // load all grunt tasks matching the `grunt-*` pattern
   require('load-grunt-tasks')(grunt);
 
+  // Add the grunt-mocha-test tasks.
+  grunt.loadNpmTasks('grunt-mocha-test');
+
   // Default task(s).
-  grunt.registerTask('default', ['clean', 'jshint', 'concat', 'uglify']);
+  grunt.registerTask('default', ['clean', 'jshint', 'concat', 'mochaTest', 'uglify']);
 
 
   // Plugin configuration(s).
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    clean: ['build/', "docs/"],
+    clean: ['build/'],
     jshint: {
-      all: ['Gruntfile.js', 'src/**/*.js']
+      all: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js']
     },
     concat: {
       standard: {
         files: {
           'build/loggerjs.skeleton.js': [
             'bower_components/cryptojs/rollups/sha1.js',
-            'src/log_levels.js',
-            'src/errorParser.js',
-            'src/entry/entry_header.tmpl',
-            'src/entry/LogEntry.js',
-            'src/entry/entry_footer.tmpl',
-            'src/task/LogTask.js',
-            'src/logger/ConsoleWrapper.js',
-            'src/logger/Logger.js'
+            'src/core/**/*.js',
+            'src/entry/**/*.js',
+            'src/task/**/*.js',
+            'src/logger/**/*.js'
           ],
-          'build/loggerjs.js': [
-            'src/logger/logger_header.tmpl',
+          'build/loggerjs.env.js': [
             'build/loggerjs.skeleton.js',
             'src/environment/**/*.js',
-            'src/logger/logger_footer.tmpl'
+            'src/module.js'
+          ],
+          'build/loggerjs.test.js': [
+            'src/test_header.part',
+            'build/loggerjs.env.js',
+            'src/test_footer.part'
+          ],
+          'build/loggerjs.js': [
+            'src/header.part',
+            'build/loggerjs.env.js',
+            'src/footer.part'
           ]
         }
+      }
+    },
+    mochaTest: {
+      test: {
+        options: {
+          reporter: 'spec'
+        },
+        src: ['test/**/*.js']
       }
     },
     uglify: {

@@ -1,7 +1,3 @@
-var LoggerJS = LoggerJS || (function (global) {
-
-'use strict';
-
 /*
 CryptoJS v3.1.2
 code.google.com/p/crypto-js
@@ -916,6 +912,3 @@ Logger.prototype.cleanWebConsole = function (parentId, consoleId) {
     if (typeof LOG_LEVELS[property] === 'string')
       loggerJsModule[property] = LOG_LEVELS[property];
   }
-
-  return loggerJsModule;
-})(this);

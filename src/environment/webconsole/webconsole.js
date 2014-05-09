@@ -4,30 +4,36 @@ var webConsoleParentId,
     webConsole;
 
 function addWebConsole () {
-  var inbody = false;
+  if (window && !webConsole) {
+    var inbody = false;
 
-  if (webConsoleParentId) {
-    webConsoleParent = window.document.getElementById(webConsoleParentId);
-  }
+    if (webConsoleParentId) {
+      webConsoleParent = window.document.getElementById(webConsoleParentId);
+    }
 
-  if (!parent) {
-    webConsoleParent = window.document.body;
-    inbody = true;
-  }
+    if (!parent) {
+      webConsoleParent = window.document.body;
+      inbody = true;
+    }
 
-  webConsole = document.createElement('div');
-  webConsole.id = webConsoleId;
+    webConsole = document.createElement('div');
+    webConsole.id = webConsoleId;
 
-  if (inbody) {
-    if (webConsoleParent.firstChild) {
-      webConsoleParent.insertBefore(webConsole, webConsoleParent.firstChild);
+    if (inbody) {
+      if (webConsoleParent.firstChild) {
+        webConsoleParent.insertBefore(webConsole, webConsoleParent.firstChild);
+      }
+      else {
+        webConsoleParent.appendChild(webConsole);
+      }
     }
     else {
       webConsoleParent.appendChild(webConsole);
     }
+    webConsoleActive = true;
   }
   else {
-    webConsoleParent.appendChild(webConsole);
+    webConsoleActive = false;
   }
 }
 
@@ -56,11 +62,12 @@ function addWebConsoleEntry (entry) {
 Logger.prototype.useWebConsole = function (parentId, consoleId) {
   webConsoleParentId = parentId || webConsoleParentId;
   webConsoleId = consoleId || webConsoleId;
-  webConsoleActive = true;
 };
 
 Logger.prototype.enableWebConsole = function (parentId, consoleId) {
-  webConsoleActive = true;
+  if (webConsole) {
+    webConsoleActive = true;
+  }
 };
 
 Logger.prototype.disableWebConsole = function (parentId, consoleId) {

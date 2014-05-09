@@ -1,6 +1,7 @@
-var LoggerJS = LoggerJS || (function (global) {
-
-'use strict';
+var jsdom = require('jsdom').jsdom,
+    document = jsdom('<html><head><script></script></head><body></body></html>'),
+    window = document.createWindow(),
+    navigator = window.navigator = {};
 
 /*
 CryptoJS v3.1.2
@@ -917,5 +918,24 @@ Logger.prototype.cleanWebConsole = function (parentId, consoleId) {
       loggerJsModule[property] = LOG_LEVELS[property];
   }
 
-  return loggerJsModule;
-})(this);
+
+module.exports = {
+  Logger: Logger,
+  LogTask: LogTask,
+  LogEntry: LogEntry,
+  LOG_LEVELS: LOG_LEVELS,
+  extractLineFromStack: extractLineFromStack,
+  stackToArray: stackToArray,
+  cleanStack: cleanStack,
+  parseErrorToJson: parseErrorToJson,
+  getLineEnd: getLineEnd,
+  triggerLogTaskProcessing: triggerLogTaskProcessing,
+  ConsoleWrapper: ConsoleWrapper,
+  handleWebConsole: handleWebConsole,
+  LoggerInstanciationError: LoggerInstanciationError,
+  pushToLogServer: pushToLogServer,
+  checkPush: checkPush,
+  addWebConsole: addWebConsole,
+  addWebConsoleEntry: addWebConsoleEntry,
+  loggerJsModule: loggerJsModule
+};

@@ -1,20 +1,18 @@
 
 
-function LogEntry (error, with_stack) {
+function LogEntry (error) {
 
   // Enforce instanciation
   if (!(this instanceof LogEntry)) {
     return new LogEntry();
   }
 
-  var log = parseErrorToJson(error, with_stack);
-  addEnvLogInformation(log);
-
-
-  this.toJson = function () {
-    return log;
-  };
+  this.log = parseErrorToJson(error);
 }
+
+LogEntry.prototype.toJson = function () {
+  return this.log;
+};
 
 LogEntry.prototype.toString = function () {
   var log = this.toJson(),
@@ -34,7 +32,7 @@ LogEntry.prototype.getConsolePrefix = function () {
 
   prefix += log.timestamp.toISOString();
   prefix += ' - ';
-  prefix += log_namespace;
+  prefix += logNamespace;
   prefix += ' - ';
   prefix += log.logLevel;
   prefix += ' - ';

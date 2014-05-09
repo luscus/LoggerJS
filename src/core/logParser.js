@@ -52,7 +52,6 @@ function cleanStack (error) {
 }
 
 
-var path_delimiter = null;
 var parseErrorToJson = function parseErrorToJson (error) {
   var with_stack = (LOG_LEVELS.withStack.indexOf(error.name) > -1) ? true : false;
 
@@ -125,16 +124,20 @@ var parseErrorToJson = function parseErrorToJson (error) {
     }
   }
 
+  // add environment specific data
+  // see src/environment/logExtender.js
+  addEnvLogInformation(log);
+
   return log;
 };
 
 
 var getLineEnd = function getFileNameFromLine (line) {
-  if (!path_delimiter) {
-    path_delimiter = (line.lastIndexOf('/') > 0) ? '/' : '\\';
+  if (!pathSep) {
+    pathSep = (line.lastIndexOf('\\') > 0) ? '\\' : '/';
   }
 
-  var index = line.lastIndexOf(path_delimiter) + 1;
+  var index = line.lastIndexOf(pathSep) + 1;
 
   if (index > 0) {
     return line.substring(index);

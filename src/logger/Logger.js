@@ -1,7 +1,4 @@
 
-var log_namespace = null,
-    uniqueLogKeys = true,
-    log_tags = [];
 
 /**
 *
@@ -25,7 +22,7 @@ function Logger (options) {
   }
 
   if (options.tags) {
-    log_tags = options.tags;
+    logTags = options.tags;
   }
 
 
@@ -37,7 +34,7 @@ function Logger (options) {
   }
 
 
-  log_namespace = options.namespace;
+  logNamespace = options.namespace;
 
   this.status = (typeof options.status === 'boolean') ? options.status : true;
   this.log_level = (LOG_LEVELS.exists(options.logLevel)) ? options.logLevel : LOG_LEVELS.ERROR;
@@ -67,7 +64,6 @@ var logServerEnabled = false,
     logServerUrl = null;
 
 
-(function () {
   var property = null;
 
   for (property in LOG_LEVELS) {
@@ -98,11 +94,11 @@ var logServerEnabled = false,
   };
 
   Logger.prototype.getNamespace = function () {
-    return log_namespace;
+    return logNamespace;
   };
 
   Logger.prototype.getTags = function () {
-    return log_tags;
+    return logTags;
   };
 
   Logger.prototype.be = function (log_level) {
@@ -194,5 +190,3 @@ var logServerEnabled = false,
     if (task instanceof LogTask && log_tasks[task.name])
       delete log_tasks[task.name];
   };
-
-})();

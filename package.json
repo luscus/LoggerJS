@@ -1,16 +1,19 @@
 {
-    "name": "LoggerJS",
-    "version": "0.0.13",
-    "devDependencies": {
-        "grunt": "*",
-        "grunt-contrib-jshint": "*",
-        "grunt-contrib-uglify": "*",
-        "grunt-contrib-concat": "*",
-        "grunt-contrib-clean": "*",
-        "load-grunt-tasks": "*"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git@github.com:luscus/LoggerJS.git"
-    }
+  "name": "LoggerJS",
+  "version": "0.0.13",
+  "devDependencies": {
+    "chai": "^1.9.1",
+    "grunt": "*",
+    "grunt-contrib-clean": "*",
+    "grunt-contrib-concat": "*",
+    "grunt-contrib-jshint": "*",
+    "grunt-contrib-uglify": "*",
+    "grunt-mocha-test": "^0.10.2",
+    "jsdom": "^0.10.5",
+    "load-grunt-tasks": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:luscus/LoggerJS.git"
+  }
 }
