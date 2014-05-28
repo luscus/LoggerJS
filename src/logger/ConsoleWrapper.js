@@ -83,6 +83,8 @@ var ConsoleWrapper = (function (methods, undefined) {
 
     // execute all logging tasks
     triggerLogTaskProcessing(entry);
+
+    return entry.toString();
   };
 
   // method builder
@@ -99,7 +101,8 @@ var ConsoleWrapper = (function (methods, undefined) {
       if (!LOG_LEVELS.checkPriority(logLevel, this.log_level)) return;
 
       // call handler extension which provides stack trace
-      Log().write(Array.prototype.slice.call(arguments, 0), method); // turn into proper array & declare method to use
+      // this call returns the LogEntry as String
+      return Log().write(Array.prototype.slice.call(arguments, 0), method); // turn into proper array & declare method to use
     };//--  fn  logMethod
   };
   var result = logMethod('log'); // base for backwards compatibility, simplicity

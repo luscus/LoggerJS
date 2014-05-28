@@ -81,6 +81,9 @@
 
                 logger.enable();
 
+                logger.log('log Object:', {test:'Ojects'});
+                console.info(logger.error(new Error('log Error Object test')));
+
                 undefinedVariable.doit();
             }
         </script>
