@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <title>Logger Test</title>
-        <script type="application/javascript" src="../build/loggerjs.js"></script>
+        <script type="application/javascript" src="../../build/loggerjs.js"></script>
     </head>
     <body>
 
@@ -45,7 +45,6 @@
 
 
 
-
                 // Handle unexpected errors
                 var options = {
                     name: 'error',
@@ -64,8 +63,10 @@
 
                 logger.setLogLevel(LoggerJS.DEBUG);
 
-                for (var idx in logger.log_priority) {
-                    var method = logger.log_priority[idx];
+                console.log(logger);
+
+                for (var idx in logger.levels.logPriority) {
+                    var method = logger.levels.logPriority[idx];
                     logger[method.toLowerCase()]('ein kleiner "'+method+'" output Test');
                 }
 

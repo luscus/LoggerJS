@@ -11,13 +11,13 @@ LOG_LEVELS.PATH    = 'PATH';
 LOG_LEVELS.DEBUG   = 'DEBUG';
 // log priority
 LOG_LEVELS.priority = {};
-LOG_LEVELS.log_priority = [
+LOG_LEVELS.logPriority = [
   LOG_LEVELS.FATAL,
   LOG_LEVELS.ERROR,
   LOG_LEVELS.WARNING,
   LOG_LEVELS.INFO,
-  LOG_LEVELS.AUTH,
   LOG_LEVELS.LOG,
+  LOG_LEVELS.AUTH,
   LOG_LEVELS.PATH,
   LOG_LEVELS.DEBUG
 ];
@@ -29,14 +29,14 @@ LOG_LEVELS.withStack = [
 ];
 
 
-for (var idx in LOG_LEVELS.log_priority) {
-  LOG_LEVELS.priority[LOG_LEVELS.log_priority[idx]] = idx;
+for (var idx in LOG_LEVELS.logPriority) {
+  LOG_LEVELS.priority[LOG_LEVELS.logPriority[idx]] = idx;
 }
 
-LOG_LEVELS.checkPriority = function (level, control_level) {
-  return (LOG_LEVELS.priority[level] <= LOG_LEVELS.priority[control_level]);
+LOG_LEVELS.checkPriority = function (checkLevel, controlLevel) {
+  return (LOG_LEVELS.priority[checkLevel] <= LOG_LEVELS.priority[controlLevel]);
 };
 
-LOG_LEVELS.exists = function (level) {
-  return (LOG_LEVELS.priority[level]) ? true : false;
+LOG_LEVELS.exists = function (logLevel) {
+  return (LOG_LEVELS.priority[logLevel]) ? true : false;
 };

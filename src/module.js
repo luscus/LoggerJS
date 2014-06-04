@@ -1,12 +1,12 @@
 
   var loggerJsModule = {
     Logger: function (options) {
-      var logger = new Logger();
+      var logger = new Logger(options);
 
       return logger;
     },
     LogTask: function (options) {
-      var task = new LogTask();
+      var task = new LogTask(options);
 
       return task;
     }

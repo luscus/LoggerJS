@@ -23,7 +23,17 @@ var loggerJsModule,
 
 var logNamespace = null,
     uniqueLogKeys = true,
+    logTasks = {},
     logTags = [];
+
+// FLAGS
+var webConsoleActive = false,
+    webConsoleParentId,
+    webConsoleParent,
+    webConsoleId = 'LJSWebConsole',
+    webConsole;
+
+var errorStack;
 
 var LOG_LEVELS = {};
 
@@ -38,13 +48,13 @@ LOG_LEVELS.PATH    = 'PATH';
 LOG_LEVELS.DEBUG   = 'DEBUG';
 // log priority
 LOG_LEVELS.priority = {};
-LOG_LEVELS.log_priority = [
+LOG_LEVELS.logPriority = [
   LOG_LEVELS.FATAL,
   LOG_LEVELS.ERROR,
   LOG_LEVELS.WARNING,
   LOG_LEVELS.INFO,
-  LOG_LEVELS.AUTH,
   LOG_LEVELS.LOG,
+  LOG_LEVELS.AUTH,
   LOG_LEVELS.PATH,
   LOG_LEVELS.DEBUG
 ];
@@ -56,19 +66,19 @@ LOG_LEVELS.withStack = [
 ];
 
 
-for (var idx in LOG_LEVELS.log_priority) {
-  LOG_LEVELS.priority[LOG_LEVELS.log_priority[idx]] = idx;
+for (var idx in LOG_LEVELS.logPriority) {
+  LOG_LEVELS.priority[LOG_LEVELS.logPriority[idx]] = idx;
 }
 
-LOG_LEVELS.checkPriority = function (level, control_level) {
-  return (LOG_LEVELS.priority[level] <= LOG_LEVELS.priority[control_level]);
+LOG_LEVELS.checkPriority = function (checkLevel, controlLevel) {
+  return (LOG_LEVELS.priority[checkLevel] <= LOG_LEVELS.priority[controlLevel]);
 };
 
-LOG_LEVELS.exists = function (level) {
-  return (LOG_LEVELS.priority[level]) ? true : false;
+LOG_LEVELS.exists = function (logLevel) {
+  return (LOG_LEVELS.priority[logLevel]) ? true : false;
 };
 
-var extractLineFromStack = function extractLineFromStack (error) {
+function extractLineFromStack (error) {
   /// <summary>
   /// Get the line/filename detail from a Webkit stack trace.  See http://stackoverflow.com/a/3806596/1037948
   /// </summary>
@@ -89,18 +99,44 @@ var extractLineFromStack = function extractLineFromStack (error) {
   line = (line.indexOf(')') >= 0 ? line.split(')')[0] : line);
 
   return line;
-};
+}
 
+function analyseStack (stack) {
+
+  // Firefox >= 29
+  if (/\n.*@/.test(stack)) {
+    return {
+      type: '@',
+      offset: 1,
+      lineSeparator: /\n.*@/,
+      lineJoiner: '\n    at '
+    };
+  }
+
+  // Chrome
+  if (/\n\s+at\s+/.test(stack)) {
+    return {
+      type: 'at',
+      offset: 3,
+      lineSeparator: /\n\s+at\s+/,
+      lineJoiner: '\n    at '
+    };
+  }
+}
 
 function stackToArray (stack) {
-  return stack.split(/\n\s+at\s+/);
+  return stack.split(errorStack.lineSeparator);
 }
 
 function stackArrayToString (stackArray) {
-  return stackArray.join('\n    at ');
+  return stackArray.join(errorStack.lineJoiner);
 }
 
 function cleanStack (error) {
+  if (!errorStack) {
+    errorStack = analyseStack(error.stack);
+  }
+
   var array = stackToArray(error.stack),
       stack;
 
@@ -111,7 +147,7 @@ function cleanStack (error) {
 
   if (error.isFromConsoleWrapper) {
     // correct line number according to how Log().write is implemented
-    stack = array.slice(3);
+    stack = array.slice(errorStack.offset);
   }
   else {
     // all other cases, take first line of the stack
@@ -122,7 +158,7 @@ function cleanStack (error) {
 }
 
 
-var parseErrorToJson = function parseErrorToJson (error) {
+function parseErrorToJson (error) {
   var with_stack = (LOG_LEVELS.withStack.indexOf(error.name) > -1) ? true : false;
 
   var log = {},
@@ -132,8 +168,8 @@ var parseErrorToJson = function parseErrorToJson (error) {
   if (error instanceof Error) {
 
     log.type = 'logentry';
-    log.namespace = log_namespace;
-    log.tags = log_tags;
+    log.namespace = logNamespace;
+    log.tags = logTags;
     log.timestamp = new Date();
     log.logLevel = error.name.toUpperCase();
     log.uniqueKey = uniqueLogKeys;
@@ -162,24 +198,13 @@ var parseErrorToJson = function parseErrorToJson (error) {
       log.logMessage = error.message;
     }
 
-    if (!error.fileName) {
-      log.logLocation = extractLineFromStack(error);
-    }
-    else {
-      log.logLocation = error.fileName;
-    }
+    log.logLocation = extractLineFromStack(error);
 
     endOfLine = getLineEnd(log.logLocation);
     parts = endOfLine.split(':');
 
-    if (!error.lineNumber) {
-      log.fileName = (parts[0]) ? parts[0] : 'unknown';
-      log.lineNumber = (parts[1]) ? parts[1] : 'unknown';
-    }
-    else {
-      log.fileName = (parts[0]) ? parts[0] : 'unknown';
-      log.lineNumber = error.lineNumber;
-    }
+    log.fileName = (parts[0]) ? parts[0] : 'unknown';
+    log.lineNumber = (parts[1]) ? parts[1] : 'unknown';
 
     if (log.logLocation.indexOf(':'+log.lineNumber) < 0) {
       log.logLocation += ':' + log.lineNumber;
@@ -199,10 +224,10 @@ var parseErrorToJson = function parseErrorToJson (error) {
   addEnvLogInformation(log);
 
   return log;
-};
+}
 
 
-var getLineEnd = function getFileNameFromLine (line) {
+function getLineEnd (line) {
   if (!pathSep) {
     pathSep = (line.lastIndexOf('\\') > 0) ? '\\' : '/';
   }
@@ -214,7 +239,7 @@ var getLineEnd = function getFileNameFromLine (line) {
   }
 
   return line;
-};
+}
 
 
 
@@ -332,15 +357,13 @@ function triggerLogTaskProcessing (entry) {
     if (!logTasks[taskName].strict || (log.logLevel === logTasks[taskName].logLevel)) {
 
       // check if the log priority is right
-      if (logLevelS.checkPriority(log.logLevel, logTasks[taskName].logLevel)) {
+      if (LOG_LEVELS.checkPriority(log.logLevel, logTasks[taskName].logLevel)) {
         logTasks[taskName].task(entry);
       }
     }
   }
 }
 
-var log_tasks = {},
-    webConsoleActive = false;
 
 var ConsoleWrapper = (function (methods, undefined) {
   var Log = Error; // does this do anything?  proper inheritance...?
@@ -380,13 +403,13 @@ var ConsoleWrapper = (function (methods, undefined) {
     if (withStack) {
       if (! (args[0] instanceof Error)) {
         // stack has to be cleaned from LoggerJS internal calls
-        var stack = stackToArray(this.stack).slice(3);
+        var stack = cleanStack(this);
 
         // add message at stack start
         stack.unshift(args[0]);
 
         // store back as log message
-        args[0] = stack.join('\n    at ');
+        args[0] = stackArrayToString (stack);
       }
     }
 
@@ -437,7 +460,7 @@ var ConsoleWrapper = (function (methods, undefined) {
       /// <param name="params" type="[...]">list your logging parameters</param>
       if (!this.status) return;
       // only if explicitly true somewhere
-      if (!LOG_LEVELS.checkPriority(logLevel, this.log_level)) return;
+      if (!LOG_LEVELS.checkPriority(logLevel, this.logLevel)) return;
 
       // call handler extension which provides stack trace
       Log().write(Array.prototype.slice.call(arguments, 0), method); // turn into proper array & declare method to use
@@ -447,11 +470,11 @@ var ConsoleWrapper = (function (methods, undefined) {
   // add some extra juice
   for(var i in methods) {
     result[methods[i].toLowerCase()] = logMethod(methods[i].toLowerCase());
-    result[methods[i].toLowerCase()].LEVEL = methods[i];
+    //result[methods[i].toLowerCase()].LEVEL = methods[i];
   }
 
   return result; // expose
-})(LOG_LEVELS.log_priority);
+})(LOG_LEVELS.logPriority);
 
 
 function handleWebConsole (entry) {
@@ -476,9 +499,8 @@ function Logger (options) {
   options = (options) ? options : {};
 
   if (!options.namespace) {
-    var error = new Error();
+    var error = new Error('you have to provide a namespace for the Logger instance: options = {namespace: "x.y.z"}');
     error.name = 'LoggerInstanciationError';
-    error.message = 'you have to provide a namespace for the Logger instance: options = {namespace: "x.y.z"}';
 
     throw error;
   }
@@ -499,10 +521,10 @@ function Logger (options) {
   logNamespace = options.namespace;
 
   this.status = (typeof options.status === 'boolean') ? options.status : true;
-  this.log_level = (LOG_LEVELS.exists(options.logLevel)) ? options.logLevel : LOG_LEVELS.ERROR;
+  this.logLevel = (LOG_LEVELS.exists(options.logLevel)) ? options.logLevel : LOG_LEVELS.ERROR;
 
   if (options.logServerUrl) {
-    logServerLevel = (LOG_LEVELS.exists(options.logServerLevel)) ? options.logServerLevel : this.log_level;
+    logServerLevel = (LOG_LEVELS.exists(options.logServerLevel)) ? options.logServerLevel : this.logLevel;
     logServerUrl = options.logServerUrl;
 
     this.useLogServer(logServerUrl, logServerLevel);
@@ -528,13 +550,15 @@ var logServerEnabled = false,
 
   var property = null;
 
+  Logger.prototype.levels = {};
+
   for (property in LOG_LEVELS) {
-    Logger.prototype[property] = LOG_LEVELS[property];
+    Logger.prototype.levels[property] = LOG_LEVELS[property];
   }
 
   Logger.prototype.setLogLevel = function (log_level) {
     if (LOG_LEVELS.exists(log_level)) {
-      this.log_level = log_level;
+      this.logLevel = log_level;
       this.status = true;
     }
   };
@@ -564,13 +588,13 @@ var logServerEnabled = false,
   };
 
   Logger.prototype.be = function (log_level) {
-    log_level = (log_level) ? log_level : this.log_level;
+    log_level = (log_level) ? log_level : this.logLevel;
 
     if (!this.status) {
       return false;
     }
 
-    if (!LOG_LEVELS.checkPriority(log_level, this.log_level)) {
+    if (!LOG_LEVELS.checkPriority(log_level, this.logLevel)) {
       return false;
     }
 
@@ -609,48 +633,48 @@ var logServerEnabled = false,
 
   Logger.prototype.registerLogTask = function (logTask) {
     if (logTask instanceof LogTask) {
-      log_tasks[logTask.name] = logTask;
+      logTasks[logTask.name] = logTask;
     }
   };
 
   Logger.prototype.getLogTasks = function () {
-    return log_tasks;
+    return logTasks;
   };
 
   Logger.prototype.setLogTaskLogLevel = function (name, log_level) {
 
-    if (log_tasks[name] && LOG_LEVELS.exists(log_level)) {
-      log_tasks[name].setLogLevel(log_level);
+    if (logTasks[name] && LOG_LEVELS.exists(log_level)) {
+      logTasks[name].setLogLevel(log_level);
     }
   };
 
   Logger.prototype.enableLogTask = function (name) {
 
-    if (log_tasks[name]) {
-      log_tasks[name].enable();
+    if (logTasks[name]) {
+      logTasks[name].enable();
     }
   };
 
   Logger.prototype.disableLogTask = function (name) {
 
-    if (log_tasks[name]) {
-      log_tasks[name].disable();
+    if (logTasks[name]) {
+      logTasks[name].disable();
     }
   };
 
   Logger.prototype.setLogTaskStatus = function (name, status) {
 
-    if (log_tasks[name]) {
-      log_tasks[name].setLogLevel(status);
+    if (logTasks[name]) {
+      logTasks[name].setLogLevel(status);
     }
   };
 
   Logger.prototype.unregisterLogTask = function (task) {
-    if (typeof task === 'string' && log_tasks[task])
-      delete log_tasks[task];
+    if (typeof task === 'string' && logTasks[task])
+      delete logTasks[task];
 
-    if (task instanceof LogTask && log_tasks[task.name])
-      delete log_tasks[task.name];
+    if (task instanceof LogTask && logTasks[task.name])
+      delete logTasks[task.name];
   };
 
 
@@ -778,8 +802,7 @@ function UnexpectedErrorHandler (message, filename, line, column, error) {
       error.lineNumber = line;
   }
   else {
-    error = new Error();
-    error.message = message;
+    error = new Error(message);
     error.fileName = filename;
     error.lineNumber = line;
   }
@@ -815,10 +838,6 @@ if (window) {
   window.onerror = UnexpectedErrorHandler;
 }
 
-var webConsoleParentId,
-    webConsoleParent,
-    webConsoleId = 'LJSWebConsole',
-    webConsole;
 
 function addWebConsole () {
   if (window && !webConsole) {
@@ -879,6 +898,7 @@ function addWebConsoleEntry (entry) {
 Logger.prototype.useWebConsole = function (parentId, consoleId) {
   webConsoleParentId = parentId || webConsoleParentId;
   webConsoleId = consoleId || webConsoleId;
+  webConsoleActive = true;
 };
 
 Logger.prototype.enableWebConsole = function (parentId, consoleId) {
@@ -899,12 +919,12 @@ Logger.prototype.cleanWebConsole = function (parentId, consoleId) {
 
   var loggerJsModule = {
     Logger: function (options) {
-      var logger = new Logger();
+      var logger = new Logger(options);
 
       return logger;
     },
     LogTask: function (options) {
-      var task = new LogTask();
+      var task = new LogTask(options);
 
       return task;
     }

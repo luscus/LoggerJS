@@ -16,8 +16,7 @@ function UnexpectedErrorHandler (message, filename, line, column, error) {
       error.lineNumber = line;
   }
   else {
-    error = new Error();
-    error.message = message;
+    error = new Error(message);
     error.fileName = filename;
     error.lineNumber = line;
   }

@@ -14,9 +14,8 @@ function Logger (options) {
   options = (options) ? options : {};
 
   if (!options.namespace) {
-    var error = new Error();
+    var error = new Error('you have to provide a namespace for the Logger instance: options = {namespace: "x.y.z"}');
     error.name = 'LoggerInstanciationError';
-    error.message = 'you have to provide a namespace for the Logger instance: options = {namespace: "x.y.z"}';
 
     throw error;
   }
@@ -37,10 +36,10 @@ function Logger (options) {
   logNamespace = options.namespace;
 
   this.status = (typeof options.status === 'boolean') ? options.status : true;
-  this.log_level = (LOG_LEVELS.exists(options.logLevel)) ? options.logLevel : LOG_LEVELS.ERROR;
+  this.logLevel = (LOG_LEVELS.exists(options.logLevel)) ? options.logLevel : LOG_LEVELS.ERROR;
 
   if (options.logServerUrl) {
-    logServerLevel = (LOG_LEVELS.exists(options.logServerLevel)) ? options.logServerLevel : this.log_level;
+    logServerLevel = (LOG_LEVELS.exists(options.logServerLevel)) ? options.logServerLevel : this.logLevel;
     logServerUrl = options.logServerUrl;
 
     this.useLogServer(logServerUrl, logServerLevel);
@@ -66,13 +65,15 @@ var logServerEnabled = false,
 
   var property = null;
 
+  Logger.prototype.levels = {};
+
   for (property in LOG_LEVELS) {
-    Logger.prototype[property] = LOG_LEVELS[property];
+    Logger.prototype.levels[property] = LOG_LEVELS[property];
   }
 
   Logger.prototype.setLogLevel = function (log_level) {
     if (LOG_LEVELS.exists(log_level)) {
-      this.log_level = log_level;
+      this.logLevel = log_level;
       this.status = true;
     }
   };
@@ -102,13 +103,13 @@ var logServerEnabled = false,
   };
 
   Logger.prototype.be = function (log_level) {
-    log_level = (log_level) ? log_level : this.log_level;
+    log_level = (log_level) ? log_level : this.logLevel;
 
     if (!this.status) {
       return false;
     }
 
-    if (!LOG_LEVELS.checkPriority(log_level, this.log_level)) {
+    if (!LOG_LEVELS.checkPriority(log_level, this.logLevel)) {
       return false;
     }
 
@@ -147,46 +148,46 @@ var logServerEnabled = false,
 
   Logger.prototype.registerLogTask = function (logTask) {
     if (logTask instanceof LogTask) {
-      log_tasks[logTask.name] = logTask;
+      logTasks[logTask.name] = logTask;
     }
   };
 
   Logger.prototype.getLogTasks = function () {
-    return log_tasks;
+    return logTasks;
   };
 
   Logger.prototype.setLogTaskLogLevel = function (name, log_level) {
 
-    if (log_tasks[name] && LOG_LEVELS.exists(log_level)) {
-      log_tasks[name].setLogLevel(log_level);
+    if (logTasks[name] && LOG_LEVELS.exists(log_level)) {
+      logTasks[name].setLogLevel(log_level);
     }
   };
 
   Logger.prototype.enableLogTask = function (name) {
 
-    if (log_tasks[name]) {
-      log_tasks[name].enable();
+    if (logTasks[name]) {
+      logTasks[name].enable();
     }
   };
 
   Logger.prototype.disableLogTask = function (name) {
 
-    if (log_tasks[name]) {
-      log_tasks[name].disable();
+    if (logTasks[name]) {
+      logTasks[name].disable();
     }
   };
 
   Logger.prototype.setLogTaskStatus = function (name, status) {
 
-    if (log_tasks[name]) {
-      log_tasks[name].setLogLevel(status);
+    if (logTasks[name]) {
+      logTasks[name].setLogLevel(status);
     }
   };
 
   Logger.prototype.unregisterLogTask = function (task) {
-    if (typeof task === 'string' && log_tasks[task])
-      delete log_tasks[task];
+    if (typeof task === 'string' && logTasks[task])
+      delete logTasks[task];
 
-    if (task instanceof LogTask && log_tasks[task.name])
-      delete log_tasks[task.name];
+    if (task instanceof LogTask && logTasks[task.name])
+      delete logTasks[task.name];
   };

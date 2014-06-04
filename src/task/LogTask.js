@@ -70,7 +70,7 @@ function triggerLogTaskProcessing (entry) {
     if (!logTasks[taskName].strict || (log.logLevel === logTasks[taskName].logLevel)) {
 
       // check if the log priority is right
-      if (logLevelS.checkPriority(log.logLevel, logTasks[taskName].logLevel)) {
+      if (LOG_LEVELS.checkPriority(log.logLevel, logTasks[taskName].logLevel)) {
         logTasks[taskName].task(entry);
       }
     }

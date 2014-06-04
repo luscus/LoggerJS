@@ -1,7 +1,3 @@
-var webConsoleParentId,
-    webConsoleParent,
-    webConsoleId = 'LJSWebConsole',
-    webConsole;
 
 function addWebConsole () {
   if (window && !webConsole) {
@@ -62,6 +58,7 @@ function addWebConsoleEntry (entry) {
 Logger.prototype.useWebConsole = function (parentId, consoleId) {
   webConsoleParentId = parentId || webConsoleParentId;
   webConsoleId = consoleId || webConsoleId;
+  webConsoleActive = true;
 };
 
 Logger.prototype.enableWebConsole = function (parentId, consoleId) {

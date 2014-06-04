@@ -1,5 +1,3 @@
-var log_tasks = {},
-    webConsoleActive = false;
 
 var ConsoleWrapper = (function (methods, undefined) {
   var Log = Error; // does this do anything?  proper inheritance...?
@@ -39,13 +37,13 @@ var ConsoleWrapper = (function (methods, undefined) {
     if (withStack) {
       if (! (args[0] instanceof Error)) {
         // stack has to be cleaned from LoggerJS internal calls
-        var stack = stackToArray(this.stack).slice(3);
+        var stack = cleanStack(this);
 
         // add message at stack start
         stack.unshift(args[0]);
 
         // store back as log message
-        args[0] = stack.join('\n    at ');
+        args[0] = stackArrayToString (stack);
       }
     }
 
@@ -96,7 +94,7 @@ var ConsoleWrapper = (function (methods, undefined) {
       /// <param name="params" type="[...]">list your logging parameters</param>
       if (!this.status) return;
       // only if explicitly true somewhere
-      if (!LOG_LEVELS.checkPriority(logLevel, this.log_level)) return;
+      if (!LOG_LEVELS.checkPriority(logLevel, this.logLevel)) return;
 
       // call handler extension which provides stack trace
       Log().write(Array.prototype.slice.call(arguments, 0), method); // turn into proper array & declare method to use
@@ -106,11 +104,11 @@ var ConsoleWrapper = (function (methods, undefined) {
   // add some extra juice
   for(var i in methods) {
     result[methods[i].toLowerCase()] = logMethod(methods[i].toLowerCase());
-    result[methods[i].toLowerCase()].LEVEL = methods[i];
+    //result[methods[i].toLowerCase()].LEVEL = methods[i];
   }
 
   return result; // expose
-})(LOG_LEVELS.log_priority);
+})(LOG_LEVELS.logPriority);
 
 
 function handleWebConsole (entry) {
