@@ -74,12 +74,12 @@ function checkPush () {
 
       if (this.status) {
         error = new Error('LogServer returned HTTP StatusCode '+this.status+', url: '+logServerUrl);
-        error.name = 'LoggerJS::LogServerException';
       }
       else {
         error = new Error('LogServer unreachable, url: '+logServerUrl);
-        error.name = 'LoggerJS::LogServerException';
       }
+
+      error.name = LOG_LEVELS.WARNING;
 
       entry = new LogEntry(error);
 

@@ -30,7 +30,7 @@ function LogTask (options) {
 
   this.status = (typeof options.status === 'boolean') ? options.status : true;
   this.strict = (typeof options.strict === 'boolean') ? options.strict : false;
-  this.logLevel = (LOG_LEVELS.exists(options.logLevel)) ? options.logLevel : logLevelS.ERROR;
+  this.logLevel = (LOG_LEVELS.exists(options.logLevel)) ? options.logLevel : LOG_LEVELS.ERROR;
 }
 
 

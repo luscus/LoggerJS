@@ -15,7 +15,7 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
     clean: ['build/'],
     jshint: {
-      all: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js']
+      all: ['package.json', 'Gruntfile.js', 'src/**/*.js', 'test/**/*.js']
     },
     concat: {
       standard: {
@@ -48,7 +48,7 @@ module.exports = function(grunt) {
     mochaTest: {
       test: {
         options: {
-          reporter: 'spec'
+          reporter: 'dot'
         },
         src: ['test/**/*.js']
       }

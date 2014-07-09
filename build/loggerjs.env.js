@@ -313,7 +313,7 @@ function LogTask (options) {
 
   this.status = (typeof options.status === 'boolean') ? options.status : true;
   this.strict = (typeof options.strict === 'boolean') ? options.strict : false;
-  this.logLevel = (LOG_LEVELS.exists(options.logLevel)) ? options.logLevel : logLevelS.ERROR;
+  this.logLevel = (LOG_LEVELS.exists(options.logLevel)) ? options.logLevel : LOG_LEVELS.ERROR;
 }
 
 
@@ -764,12 +764,12 @@ function checkPush () {
 
       if (this.status) {
         error = new Error('LogServer returned HTTP StatusCode '+this.status+', url: '+logServerUrl);
-        error.name = 'LoggerJS::LogServerException';
       }
       else {
         error = new Error('LogServer unreachable, url: '+logServerUrl);
-        error.name = 'LoggerJS::LogServerException';
       }
+
+      error.name = LOG_LEVELS.WARNING;
 
       entry = new LogEntry(error);
 
