@@ -27,7 +27,7 @@
                     uniqueLogKeys: false,
                     tags: ['TEST','LOGGER']
                 },
-                logger = new LoggerJS.Logger(options);
+                logger = LoggerJS.Logger(options);
 
             function retest () {
                 //document.getElementById('WCParent').innerHTML = '';
@@ -55,7 +55,7 @@
                         console.log('error TASK running...');
                     }
                 },
-                    task = new LoggerJS.LogTask(options);
+                    task = LoggerJS.LogTask(options);
 
                 logger.registerLogTask(task);
 

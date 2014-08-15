@@ -1,16 +1,17 @@
 var LOG_LEVELS = {},
     levels = [
-      'AUTH',
-      'LOG',
-      'INFO',
       'FATAL',
       'ERROR',
       'WARNING',
+      'LOG',
+      'INFO',
+      'AUTH',
       'PATH',
       'DEBUG'
     ];
 
 LOG_LEVELS.priority = {};
+LOG_LEVELS.logPriority = levels;
 
 // log LOG_LEVELS
 for (var index in levels) {

@@ -12,9 +12,9 @@
     }
   };
 
-
   // Add Log Level constants
   for (var property in LOG_LEVELS) {
-    if (typeof LOG_LEVELS[property] === 'string')
+    if (typeof LOG_LEVELS[property] === 'string') {
       loggerJsModule[property] = LOG_LEVELS[property];
+    }
   }

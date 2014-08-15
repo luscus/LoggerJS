@@ -5,6 +5,8 @@
   };
 
 
+
+  console.log('LOG_LEVELS: '+LOG_LEVELS);
   // Add Log Level constants
   for (property in LOG_LEVELS) {
     if (typeof LOG_LEVELS[property] === 'string') {

@@ -29,8 +29,8 @@ logger.useLogfile('./test/backup/test.log');
 
 
 function runTest () {
-  for (var idx in logger.log_priority) {
-    var method = logger.log_priority[idx];
+  for (var idx in logger.levels.logPriority) {
+    var method = logger.levels.logPriority[idx];
     logger[method.toLowerCase()]('ein kleiner "'+method+'" output Test');
   }
 
