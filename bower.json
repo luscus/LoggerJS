@@ -1,9 +1,9 @@
 {
     "name": "LoggerJS",
-    "version": "0.0.13",
+    "version": "0.1.0",
     "homepage": "https://github.com/luscus/LoggerJS",
     "author": "https://github.com/luscus/LoggerJS/graphs/contributors",
-    "description": "LoggerJS enables client side logging using the console and pushing towards a Log Server",
+    "description": "LoggerJS enables client and server side logging using the console and any available target output type.",
     "keywords": [
         "LoggerJS",
         "logger",
