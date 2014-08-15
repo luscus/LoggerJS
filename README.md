@@ -1,6 +1,7 @@
 
 # LoggerJS
 [![dependencies](https://david-dm.org/luscus/LoggerJS.png)](https://david-dm.org/luscus/LoggerJS)
+[![devDependency Status](https://david-dm.org/luscus/LoggerJS/dev-status.svg?theme=shields.io)](https://david-dm.org/luscus/LoggerJS#info=devDependencies)
 
 LoggerJS enables client side logging using the console (if available) and pushing Log Entries towards a Log Server.
 
