@@ -1,3 +1,0 @@
-var LoggerJS = LoggerJS || (function (global) {
-
-'use strict';

@@ -8,6 +8,7 @@ module.exports = function(grunt) {
 
   // Default task(s).
   grunt.registerTask('default', ['clean', 'jshint', 'concat', 'mochaTest', 'uglify']);
+  grunt.registerTask('compile', ['clean', 'jshint', 'concat', 'uglify']);
 
 
   // Plugin configuration(s).
@@ -22,24 +23,41 @@ module.exports = function(grunt) {
         files: {
           'build/loggerjs.skeleton.js': [
             'bower_components/cryptojs/rollups/sha1.js',
-            'src/core/**/*.js',
-            'src/entry/**/*.js',
-            'src/task/**/*.js',
-            'src/logger/**/*.js'
+            'src/common/core/**/*.js',
+            'src/common/entry/**/*.js',
+            'src/common/task/**/*.js',
+            'src/common/logger/**/*.js'
           ],
-          'build/loggerjs.env.js': [
+          'build/loggerjs.browser.env.js': [
             'build/loggerjs.skeleton.js',
-            'src/environment/**/*.js',
-            'src/module.js'
+            'src/specific/browser/**/*.js',
+            'src/common/module.js'
           ],
-          'build/loggerjs.test.js': [
-            'src/test_header.part',
-            'build/loggerjs.env.js',
-            'src/test_footer.part'
+          'build/loggerjs.browser.test.js': [
+            'src/common/test_header.part',
+            'build/loggerjs.browser.env.js',
+            'src/common/test_footer.part'
           ],
-          'build/loggerjs.js': [
+          'lib/loggerjs.browser.js': [
+            'src/specific/browser/header.part',
+            'build/loggerjs.browser.env.js',
+            'src/specific/browser/footer.part'
+          ],
+          'lib/loggerjs.angular.js': [
+            'src/specific/browser/header.part',
+            'build/loggerjs.browser.env.js',
+            'src/specific/browser/footer.part'
+          ],
+          'build/loggerjs.node.env.js': [
+            'src/specific/node/header.part',
+            'build/loggerjs.skeleton.js',
+            'src/specific/node/**/*.js',
+            'src/module.js',
+            'src/specific/node/footer.part'
+          ],
+          'lib/loggerjs.node.js': [
             'src/header.part',
-            'build/loggerjs.env.js',
+            'build/loggerjs.node.env.js',
             'src/footer.part'
           ]
         }
@@ -56,7 +74,8 @@ module.exports = function(grunt) {
     uglify: {
       standard: {
         files: {
-          'build/loggerjs.min.js': 'build/loggerjs.js'
+          'lib/loggerjs.browser.min.js': 'lib/loggerjs.browser.js',
+          'lib/loggerjs.angular.min.js': 'lib/loggerjs.angular.js'
         }
       }
     }

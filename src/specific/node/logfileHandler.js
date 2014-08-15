@@ -108,7 +108,7 @@ function setLogfileStream () {
       logfileStream = fs.createWriteStream(logfilePath, {
         flags    : 'a',
         encoding : 'utf8',
-        mode     : 0644
+        mode     : '0644'
       });
 
       logfileStream.on('error', function (err) {

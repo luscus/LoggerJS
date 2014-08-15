@@ -1,24 +1,25 @@
 {
-    "name": "LoggerJS",
-    "version": "0.1.0",
-    "homepage": "https://github.com/luscus/LoggerJS",
-    "author": "https://github.com/luscus/LoggerJS/graphs/contributors",
-    "description": "LoggerJS enables client and server side logging using the console and any available target output type.",
-    "keywords": [
-        "LoggerJS",
-        "logger",
-        "logging"
-    ],
-    "dependencies": {},
-    "devDependencies": {
-        "cryptojs": "https://crypto-js.googlecode.com/files/CryptoJS%20v3.1.2.zip"
-    },
-    "ignore": [
-        "bower_components/",
-        "node_modules/",
-        "package.json",
-        "Gruntfile.js",
-        "src/",
-        "test/"
-    ]
+  "name": "LoggerJS",
+  "version": "0.1.0",
+  "homepage": "https://github.com/luscus/LoggerJS",
+  "author": "https://github.com/luscus/LoggerJS/graphs/contributors",
+  "description": "LoggerJS enables client and server side logging using the console and any available target output type.",
+  "keywords": [
+    "LoggerJS",
+    "logger",
+    "logging"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "cryptojs": "https://crypto-js.googlecode.com/files/CryptoJS%20v3.1.2.zip"
+  },
+  "ignore": [
+    "bower_components/",
+    "node_modules/",
+    "package.json",
+    "Gruntfile.js",
+    "src/",
+    "test/",
+    "build/"
+  ]
 }

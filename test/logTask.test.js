@@ -1,4 +1,4 @@
-var logger = require('../build/loggerjs.test'),
+var logger = require('../lib/loggerjs.browser.test'),
     chai = require('chai'),
     expect = chai.expect,
     options = {
