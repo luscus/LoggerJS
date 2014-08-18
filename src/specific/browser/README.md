@@ -35,8 +35,8 @@ Create a Logger instance
     },
     logger = new LoggerJS.Logger(options);
 
-please refer to the [README](https://github.com/luscus/LoggerJS/blob/master/README.md) for an up to date list of options.
+please refer to the [LoggerJS README](https://github.com/luscus/LoggerJS/blob/master/README.md#instanciation-options) for a full list of options.
 
 ## API
 
-please refer to the [README](https://github.com/luscus/LoggerJS/blob/master/README.md) for an up to date API description.
+please refer to the [LoggerJS README](https://github.com/luscus/LoggerJS/blob/master/README.md#api) for an up to date API description.
