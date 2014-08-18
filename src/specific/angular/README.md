@@ -1,4 +1,5 @@
-# AngularJS specifics [return to README](https://github.com/luscus/LoggerJS/blob/master/README.md)
+# AngularJS specifics
+[return to LoggerJS README](https://github.com/luscus/LoggerJS/blob/master/README.md)
 
 
 ## Usage

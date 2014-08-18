@@ -1,4 +1,5 @@
-# Browser Library specifics [return to README](https://github.com/luscus/LoggerJS/blob/master/README.md)
+# Browser Library specifics
+[return to LoggerJS README](https://github.com/luscus/LoggerJS/blob/master/README.md)
 
 
 ## Usage

@@ -1,4 +1,5 @@
-# Node.js specifics [return to README](https://github.com/luscus/LoggerJS/blob/master/README.md)
+# Node.js specifics
+[return to LoggerJS README](https://github.com/luscus/LoggerJS/blob/master/README.md)
 
 
 ## Usage
