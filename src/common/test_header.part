@@ -1,0 +1,4 @@
+var jsdom = require('jsdom').jsdom,
+    document = jsdom('<html><head><script></script></head><body></body></html>'),
+    window = document.createWindow(),
+    navigator = window.navigator = {};

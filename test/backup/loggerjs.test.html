@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <title>Logger Test</title>
+        <script type="application/javascript" src="../../lib/loggerjs.browser.js"></script>
+    </head>
+    <body>
+
+        <h1>LoggerJS (very) simple Tests</h1>
+        You have to open your Browser DEV-Tools to see the tests in the Console <br/>
+        <button onclick="retest()">Run Test</button>
+        <button onclick="clearConsole()">Clear Console</button>
+
+        <h2>Log Server URL</h2>
+        <input id="logeServerUrl" type="text" placeholder="http://host:port" />
+
+
+        <h2>Web Console</h2>
+        <div id="WCParent"></div>
+
+        <script type="application/javascript">
+            var options = {
+                    namespace : 'loggerjs.test.run',
+                    uniqueLogKeys: false,
+                    tags: ['TEST','LOGGER']
+                },
+                logger = LoggerJS.Logger(options);
+
+            function retest () {
+                //document.getElementById('WCParent').innerHTML = '';
+                runTest();
+            }
+
+            function clearConsole () {
+                //document.getElementById('WCParent').innerHTML = '';
+                logger.cleanWebConsole();
+            }
+
+            function runTest () {
+                var logeServerUrl = document.getElementById('logeServerUrl').value;
+
+
+
+
+                // Handle unexpected errors
+                var options = {
+                    name: 'error',
+                    status: true,
+                    strict: false,
+                    logLevel : LoggerJS.ERROR,
+                    task: function (logEntry) {
+                        console.log('error TASK running...');
+                    }
+                },
+                    task = LoggerJS.LogTask(options);
+
+                logger.registerLogTask(task);
+
+                logger.useWebConsole('WCParent');
+
+                logger.setLogLevel(LoggerJS.DEBUG);
+
+                console.log(logger);
+
+                for (var idx in logger.levels.logPriority) {
+                    var method = logger.levels.logPriority[idx];
+                    logger[method.toLowerCase()]('ein kleiner "'+method+'" output Test');
+                }
+
+                if (logeServerUrl)
+                    logger.useLogServer(logeServerUrl);
+
+                logger.toggleStatus();
+                logger.setLogLevel(LoggerJS.ERROR);
+                logger.disable();
+
+                logger.log('log Object:', {test:'Ojects'});
+                logger.error(new Error('log Error Object test'));
+
+                logger.enable();
+
+                undefinedVariable.doit();
+            }
+        </script>
+    </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

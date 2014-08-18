@@ -1,4 +1,7 @@
+
 # LoggerJS
+[![dependencies](https://david-dm.org/luscus/LoggerJS.png)](https://david-dm.org/luscus/LoggerJS)
+[![devDependency Status](https://david-dm.org/luscus/LoggerJS/dev-status.svg?theme=shields.io)](https://david-dm.org/luscus/LoggerJS#info=devDependencies)
 
 LoggerJS enables client side logging using the console (if available) and pushing Log Entries towards a Log Server.
 
@@ -115,11 +118,11 @@ or
 
 Log Levels in order of priority:
 
-* `LoggerJS.AUTH`: related to authentication (lowest level)
-* `LoggerJS.INFO`: information about the state of the application
 * `LoggerJS.FATAL`: critical issue. After output, application should be brocken
 * `LoggerJS.ERROR`: critical issue
 * `LoggerJS.WARNING`: something isn't quite correct, but the application runs
+* `LoggerJS.INFO`: information about the state of the application
+* `LoggerJS.AUTH`: related to authentication (lowest level)
 * `LoggerJS.LOG`: generic logging
 * `LoggerJS.PATH`: output about the function navigation of the data
 * `LoggerJS.DEBUG`: debugging information (highest level)

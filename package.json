@@ -1,16 +1,45 @@
 {
-    "name": "LoggerJS",
-    "version": "0.0.14",
-    "devDependencies": {
-        "grunt": "*",
-        "grunt-contrib-jshint": "*",
-        "grunt-contrib-uglify": "*",
-        "grunt-contrib-concat": "*",
-        "grunt-contrib-clean": "*",
-        "load-grunt-tasks": "*"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git@github.com:luscus/LoggerJS.git"
-    }
+  "name": "loggerjs",
+  "version": "0.1.0",
+  "homepage": "https://github.com/luscus/LoggerJS",
+  "author": "https://github.com/luscus/LoggerJS/graphs/contributors",
+  "description": "LoggerJS enables client and server side logging using the console and any available target output type.",
+  "keywords": [
+    "LoggerJS",
+    "logger",
+    "logging"
+  ],
+  "dependencies": {
+    "request": "2.34.x"
+  },
+  "devDependencies": {
+    "grunt": "0.4.5",
+    "grunt-contrib-clean": "0.5.0",
+    "grunt-contrib-concat": "0.4.0",
+    "grunt-contrib-jshint": "0.10.0",
+    "grunt-contrib-uglify": "0.5.0",
+    "grunt-mocha-test": "0.10.2",
+    "load-grunt-tasks": "0.6.0",
+    "chai": "1.9.1",
+    "karma": "0.12.21",
+    "mocha": "1.21.4",
+    "karma-mocha": "0.1.7",
+    "karma-chai": "0.1.0",
+    "sinon": "1.10.3",
+    "karma-sinon": "1.0.3",
+    "karma-chrome-launcher": "^0.1.4",
+    "karma-firefox-launcher": "^0.1.3",
+    "karma-ie-launcher": "^0.1.5",
+    "karma-phantomjs-launcher": "^0.1.4",
+    "karma-safari-launcher": "^0.1.1"
+  },
+  "optionalDependencies": {
+    "jsdom": "0.10.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:luscus/LoggerJS.git"
+  },
+  "main": "./lib/loggerjs.node",
+  "bugs": "https://github.com/luscus/node-LoggerJS/issues"
 }

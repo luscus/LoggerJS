@@ -1,6 +1,8 @@
 node_modules/
 bower_components/
+build/
 config/runtime.json
+test/backup/test.log
 npm-debug.log
 .git/
 .DS_Store
