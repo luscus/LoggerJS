@@ -14,7 +14,7 @@ module.exports = function(grunt) {
   // Plugin configuration(s).
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    clean: ['build/'],
+    clean: ['build/', 'lib/'],
     jshint: {
       all: ['package.json', 'Gruntfile.js', 'src/**/*.js', 'test/**/*.js']
     },
@@ -46,7 +46,8 @@ module.exports = function(grunt) {
           'lib/loggerjs.angular.js': [
             'src/specific/browser/header.part',
             'build/loggerjs.browser.env.js',
-            'src/specific/browser/footer.part'
+            'src/specific/browser/footer.part',
+            'src/specific/angularjs/footer.part'
           ],
           'build/loggerjs.node.env.js': [
             'src/specific/node/header.part',
