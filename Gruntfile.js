@@ -38,16 +38,16 @@ module.exports = function(grunt) {
             'build/loggerjs.browser.env.js',
             'src/common/test_footer.part'
           ],
-          'lib/loggerjs.browser.js': [
+          'lib/browser/logger.js': [
             'src/specific/browser/header.part',
             'build/loggerjs.browser.env.js',
             'src/specific/browser/footer.part'
           ],
-          'lib/loggerjs.angular.js': [
+          'lib/angular/angular-logger.js': [
             'src/specific/browser/header.part',
             'build/loggerjs.browser.env.js',
             'src/specific/browser/footer.part',
-            'src/specific/angularjs/footer.part'
+            'src/specific/angular/footer.part'
           ],
           'build/loggerjs.node.env.js': [
             'src/specific/node/header.part',
@@ -56,7 +56,7 @@ module.exports = function(grunt) {
             'src/module.js',
             'src/specific/node/footer.part'
           ],
-          'lib/loggerjs.node.js': [
+          'lib/node/logger.js': [
             'src/header.part',
             'build/loggerjs.node.env.js',
             'src/footer.part'
@@ -75,8 +75,8 @@ module.exports = function(grunt) {
     uglify: {
       standard: {
         files: {
-          'lib/loggerjs.browser.min.js': 'lib/loggerjs.browser.js',
-          'lib/loggerjs.angular.min.js': 'lib/loggerjs.angular.js'
+          'lib/browser/logger.min.js': 'lib/browser/logger.js',
+          'lib/angular/angular-logger.min.js': 'lib/angular/angular-logger.js'
         }
       }
     }

@@ -20,36 +20,13 @@ Please report bugs there [on Github](https://github.com/luscus/LoggerJS/issues).
 
 ## Usage
 
-### Set Dependency
+### Select Environment Script
 
-Add following entry to your `bower.json` in the `dependencies` property
+* Browser library [see README](https://github.com/luscus/LoggerJS/blob/master/src/specific/browser/README.md)
+* Node.js [see README](https://github.com/luscus/LoggerJS/blob/master/src/specific/node/README.md)
+* AngularJS [see README](https://github.com/luscus/LoggerJS/blob/master/src/specific/angular/README.md)
 
-    "dependencies": {
-      "LoggerJS" : "https://github.com/luscus/LoggerJS.git"
-    },
-
-
-### Bind Library
-
-    <script type="application/javascript" src="..bower_components/LoggerJS/build/loggerjs.js"></script>
-
-Or the minified version
-
-    <script type="application/javascript" src="..bower_components/LoggerJS/build/loggerjs.min.js"></script>
-
-### Instanciate
-
-Create a Logger instance
-
-    var options = {
-      namespace :    'my.awsome.project',
-      uniqueLogKeys: <boolean>,
-      status :       <boolean>,
-      logLevel :     LoggerJS.<LEVEL>,
-      logServerUrl : '<logging_service_url>',
-      tags :         ['myproject', 'gui', 'something']
-    },
-    logger = new LoggerJS.Logger(options);
+### Instanciation options
 
 Here is the option list
 
