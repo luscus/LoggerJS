@@ -10,7 +10,7 @@
     "logging"
   ],
   "dependencies": {
-    "request": "2.40.0"
+    "request": "2.82.0"
   },
   "devDependencies": {
     "grunt": "0.4.5",
